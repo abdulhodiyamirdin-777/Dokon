@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Do'kon</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: #f5f5f5;
+    color: #1a1a1a;
+    padding: 16px 16px 100px;
+  }
+  h1 { font-size: 20px; margin: 0 0 4px; }
+  .sub { color: #888; font-size: 13px; margin-bottom: 16px; }
+
+  .product {
+    background: #fff;
+    border-radius: 14px;
+    padding: 12px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 10px;
+  }
+  .product .emoji {
+    font-size: 34px;
+    width: 50px;
+    text-align: center;
+  }
+  .product .info { flex: 1; }
+  .product .name { font-size: 14px; font-weight: 600; margin: 0; }
+  .product .price { font-size: 13px; color: #888; margin: 2px 0 0; }
+
+  .product button {
+    border: none;
+    background: #2ea6ff;
+    color: #fff;
+    padding: 8px 14px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 700;
+  }
+  .product .qty-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #2ea6ff;
+    border-radius: 10px;
+    padding: 4px 8px;
+  }
+  .product .qty-row button {
+    background: transparent;
+    padding: 0;
+    width: 20px;
+    font-size: 16px;
+  }
+  .product .qty-row span { color: #fff; font-weight: 700; font-size: 13px; }
+
+  .order-box {
+    background: #fff;
+    border-radius: 14px;
+    padding: 14px;
+    margin-top: 20px;
+  }
+  .order-box.hidden { display: none; }
+  .order-box label {
+    display: block;
+    font-size: 13px;
+    color: #888;
+    margin: 10px 0 4px;
+  }
+  .order-box input, .order-box textarea {
+    width: 100%;
+    padding: 10px;
+    border-radius: 10px;
+    border: 1px solid #ddd;
+    font-size: 14px;
+  }
+  .total {
+    display: flex;
+    justify-content: space-between;
+    font-weight: 700;
+    font-size: 15px;
+    padding-top: 4px;
+  }
+
+  footer {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    padding: 12px 16px;
+    background: #f5f5f5;
+  }
+  footer button {
+    width: 100%;
+    border: none;
+    background: #2ea6ff;
+    color: #fff;
+    padding: 14px;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 700;
+  }
+  footer button:disabled { opacity: 0.4; }
+</style>
+</head>
+<body>
+
+<h1>Do'kon</h1>
+<p class="sub">Kerakli mahsulotni tanlang</p>
+
+<div id="product-list"></div>
+
+<div class="order-box hidden" id="order-box">
+  <div class="total">
+    <span>Jami</span>
+    <span id="total-text">0 so'm</span>
+  </div>
+  <label>Ismingiz</label>
+  <input type="text" id="f-name" placeholder="Ism Familiya">
+  <label>Telefon raqam</label>
+  <input type="tel" id="f-phone" placeholder="+998 90 123 45 67">
+  <label>Manzil</label>
+  <input type="text" id="f-address" placeholder="Shahar, tuman, ko'cha">
+</div>
+
+<footer>
+  <button id="order-btn" disabled>Savat bo'sh</button>
+</footer>
+
+<script>
+const tg = window.Telegram.WebApp;
+tg.ready();
+tg.expand();
+
+// Mahsulotlarni shu yerda o'zgartiring
+const PRODUCTS = [
+  { id: 1, name: "Mahsulot 1", price: 50000, emoji: "📦" },
+  { id: 2, name: "Mahsulot 2", price: 75000, emoji: "🎁" },
+  { id: 3, name: "Mahsulot 3", price: 120000, emoji: "🛍️" },
+];
+
+let cart = {};
+
+function fmt(n) { return n.toLocaleString("ru-RU") + " so'm"; }
+function total() {
+  return Object.entries(cart).reduce((s, [id, qty]) => {
+    const p = PRODUCTS.find(p => p.id == id);
+    return s + p.price * qty;
+  }, 0);
+}
+function count() { return Object.values(cart).reduce((a,b) => a+b, 0); }
+
+function renderProducts() {
+  const list = document.getElementById("product-list");
+  list.innerHTML = "";
+  PRODUCTS.forEach(p => {
+    const qty = cart[p.id] || 0;
+    const row = document.createElement("div");
+    row.className = "product";
+    row.innerHTML = `
+      <div class="emoji">${p.emoji}</div>
+      <div class="info">
+        <p class="name">${p.name}</p>
+        <p class="price">${fmt(p.price)}</p>
+      </div>
+      ${qty === 0
+        ? `<button data-add="${p.id}">Qo'shish</button>`
+        : `<div class="qty-row">
+             <button data-minus="${p.id}">−</button>
+             <span>${qty}</span>
+             <button data-plus="${p.id}">+</button>
+           </div>`
+      }
+    `;
+    list.appendChild(row);
+  });
+  updateFooter();
+}
+
+document.getElementById("product-list").addEventListener("click", e => {
+  const add = e.target.getAttribute("data-add");
+  const plus = e.target.getAttribute("data-plus");
+  const minus = e.target.getAttribute("data-minus");
+  if (add) cart[add] = (cart[add] || 0) + 1;
+  if (plus) cart[plus] = (cart[plus] || 0) + 1;
+  if (minus) { cart[minus] -= 1; if (cart[minus] <= 0) delete cart[minus]; }
+  renderProducts();
+});
+
+function updateFooter() {
+  const btn = document.getElementById("order-btn");
+  const box = document.getElementById("order-box");
+  const c = count();
+  if (c === 0) {
+    btn.disabled = true;
+    btn.textContent = "Savat bo'sh";
+    box.classList.add("hidden");
+  } else {
+    btn.disabled = false;
+    btn.textContent = "Buyurtma berish";
+    box.classList.remove("hidden");
+    document.getElementById("total-text").textContent = fmt(total());
+  }
+}
+
+document.getElementById("order-btn").addEventListener("click", () => {
+  const name = document.getElementById("f-name").value.trim();
+  const phone = document.getElementById("f-phone").value.trim();
+  const address = document.getElementById("f-address").value.trim();
+
+  if (!name || !phone || !address) {
+    tg.showAlert("Ism, telefon va manzilni to'ldiring");
+    return;
+  }
+
+  const order = {
+    items: Object.entries(cart).map(([id, qty]) => {
+      const p = PRODUCTS.find(p => p.id == id);
+      return { name: p.name, qty, price: p.price };
+    }),
+    total: total(),
+    name, phone, address,
+  };
+
+  tg.sendData(JSON.stringify(order));
+});
+
+renderProducts();
+</script>
+</body>
+</html>
