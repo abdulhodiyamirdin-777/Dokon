@@ -1,0 +1,6 @@
+[
+  { "id": 1, "name": "Video karta", "price": 100000, "image": "IMG_20260711_071756_495.jpg", "cat": "Elektronika" },
+  { "id": 2, "name": "Shayton", "price": 80000, "image": "IMG_20260711_071756_481.jpg", "cat": "Elektronika" },
+  { "id": 3, "name": "Kulichator", "price": 25000, "image": "IMG_20260711_071755_751.jpg", "cat": "Elektronika" },
+  { "id": 4, "name": "Avto zapchast pachinnik", "price": 150000, "image": "IMG_20260711_071756_876.jpg", "cat": "Avto ehtiyot qismlari" }
+]
