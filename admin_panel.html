@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Do'kon Admin Panel</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
+            background: #f5f5f5;
+            color: #1a1a1a;
+        }
+        
+        header {
+            background: linear-gradient(135deg, #1a1a1a 0%, #333 100%);
+            color: #fff;
+            padding: 20px 40px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        header h1 {
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+        
+        .header-info {
+            display: flex;
+            gap: 30px;
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #ddd;
+            padding-bottom: 0;
+        }
+        
+        .tab-btn {
+            padding: 12px 24px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 600;
+            color: #666;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+            margin-bottom: -2px;
+        }
+        
+        .tab-btn.active {
+            color: #1a1a1a;
+            border-bottom-color: #e8342a;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 20px;
+        }
+        
+        .product-card {
+            background: #fff;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+        }
+        
+        .product-card:hover {
+            box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+            transform: translateY(-2px);
+        }
+        
+        .product-img {
+            width: 100%;
+            height: 200px;
+            background: #f0f0f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 60px;
+            overflow: hidden;
+        }
+        
+        .product-img img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .product-body {
+            padding: 16px;
+        }
+        
+        .product-name {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            min-height: 40px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .product-meta {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 12px;
+            font-size: 13px;
+        }
+        
+        .meta-item {
+            background: #f5f5f5;
+            padding: 8px;
+            border-radius: 8px;
+        }
+        
+        .meta-label {
+            color: #999;
+            font-size: 11px;
+            text-transform: uppercase;
+        }
+        
+        .meta-value {
+            font-weight: 600;
+            margin-top: 2px;
+        }
+        
+        .price-display {
+            font-size: 18px;
+            font-weight: 800;
+            color: #e8342a;
+            cursor: pointer;
+            padding: 8px 0;
+            transition: all 0.2s;
+        }
+        
+        .price-display:hover {
+            color: #c7291f;
+        }
+        
+        .edit-input {
+            width: 100%;
+            padding: 8px;
+            border: 2px solid #e8342a;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 700;
+            display: none;
+        }
+        
+        .edit-input.active {
+            display: block;
+        }
+        
+        .product-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+        }
+        
+        .btn-small {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .btn-edit {
+            background: #f0f0f0;
+            color: #1a1a1a;
+        }
+        
+        .btn-edit:hover {
+            background: #e0e0e0;
+        }
+        
+        .btn-delete {
+            background: #fee;
+            color: #e8342a;
+        }
+        
+        .btn-delete:hover {
+            background: #fdd;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: #fff;
+            padding: 24px;
+            border-radius: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .stat-label {
+            color: #999;
+            font-size: 13px;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+        
+        .stat-value {
+            font-size: 32px;
+            font-weight: 800;
+            color: #1a1a1a;
+        }
+        
+        .add-product-btn {
+            background: #e8342a;
+            color: #fff;
+            padding: 16px 32px;
+            border: none;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 30px;
+        }
+        
+        .add-product-btn:hover {
+            background: #c7291f;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(232, 52, 42, 0.3);
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal.active {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: #fff;
+            padding: 30px;
+            border-radius: 16px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        .modal-content h2 {
+            margin-bottom: 20px;
+        }
+        
+        .form-group {
+            margin-bottom: 16px;
+        }
+        
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: #666;
+        }
+        
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+        
+        .form-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 24px;
+        }
+        
+        .form-actions button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .btn-save {
+            background: #e8342a;
+            color: #fff;
+        }
+        
+        .btn-save:hover {
+            background: #c7291f;
+        }
+        
+        .btn-cancel {
+            background: #f0f0f0;
+            color: #1a1a1a;
+        }
+        
+        .btn-cancel:hover {
+            background: #e0e0e0;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            font-size: 16px;
+            color: #999;
+        }
+        
+        .error {
+            background: #fee;
+            color: #e8342a;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .success {
+            background: #efe;
+            color: #2a8a2a;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>🛍️ Do'kon Admin Panel</h1>
+    <div class="header-info">
+        <div>Mahsulotlar: <strong id="total-products">0</strong></div>
+        <div>Umumiy tushum: <strong id="total-revenue">0 so'm</strong></div>
+        <div>Buyurtmalar: <strong id="total-orders">0</strong></div>
+    </div>
+</header>
+
+<div class="container">
+    <div class="tabs">
+        <button class="tab-btn active" data-tab="products">Mahsulotlar</button>
+        <button class="tab-btn" data-tab="stats">Statistika</button>
+        <button class="tab-btn" data-tab="settings">Sozlamalar</button>
+    </div>
+    
+    <div id="products" class="tab-content active">
+        <button class="add-product-btn" onclick="openAddModal()">+ Yangi mahsulot qo'shish</button>
+        <div id="message"></div>
+        <div class="products-grid" id="products-grid"></div>
+    </div>
+    
+    <div id="stats" class="tab-content">
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-label">Buyurtmalar soni</div>
+                <div class="stat-value" id="stat-orders">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Umumiy tushum</div>
+                <div class="stat-value" id="stat-revenue">0 so'm</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">O'rtacha buyurtma</div>
+                <div class="stat-value" id="stat-average">0 so'm</div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="settings" class="tab-content">
+        <div class="stat-card" style="max-width: 500px;">
+            <h3>Sozlamalar</h3>
+            <p style="margin-top: 16px; color: #666; line-height: 1.6;">
+                Admin panel GitHub orqali mahsulot ma'lumotlarini boshqaradi.<br><br>
+                Mahsulotlarni qo'shish, o'zgartirish yoki o'chirish uchun yuqoridagi "Mahsulotlar" tabi ishlatining.
+            </p>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="addModal">
+    <div class="modal-content">
+        <h2>Yangi mahsulot qo'shish</h2>
+        <form id="addForm">
+            <div class="form-group">
+                <label>Nomi *</label>
+                <input type="text" id="add-name" required placeholder="Mahsulot nomi">
+            </div>
+            <div class="form-group">
+                <label>Narxi (so'mda) *</label>
+                <input type="number" id="add-price" required placeholder="50000">
+            </div>
+            <div class="form-group">
+                <label>Kategoriya *</label>
+                <select id="add-category" required>
+                    <option value="">Tanlang</option>
+                    <option value="Elektronika">Elektronika</option>
+                    <option value="Avto ehtiyot qismlari">Avto ehtiyot qismlari</option>
+                    <option value="Gadjetlar">Gadjetlar</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Rasm URL'i (ixtiyoriy)</label>
+                <input type="text" id="add-image" placeholder="https://example.com/rasm.jpg">
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="btn-save">Qo'shish</button>
+                <button type="button" class="btn-cancel" onclick="closeModal()">Bekor qilish</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+const GITHUB_TOKEN = "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";
+const REPO = "abdulhodiyamirdin-777/Dokon";
+const API_BASE = `https://api.github.com/repos/${REPO}/contents/`;
+
+let products = [];
+let stats = {};
+
+async function loadData() {
+    try {
+        // Mahsulotlarni yuklash
+        const pRes = await fetch(API_BASE + "products.json", {
+            headers: { "Authorization": `token ${GITHUB_TOKEN}` }
+        });
+        const pData = await pRes.json();
+        products = JSON.parse(atob(pData.content));
+        
+        // Statistikani yuklash
+        const sRes = await fetch(API_BASE + "stats.json", {
+            headers: { "Authorization": `token ${GITHUB_TOKEN}` }
+        });
+        const sData = await sRes.json();
+        stats = JSON.parse(atob(sData.content));
+        
+        renderProducts();
+        updateStats();
+    } catch (e) {
+        showMessage("Ma'lumotlarni yuklash xatosi", "error");
+    }
+}
+
+function renderProducts() {
+    const grid = document.getElementById("products-grid");
+    grid.innerHTML = products.map(p => `
+        <div class="product-card">
+            <div class="product-img">${p.image ? `<img src="${p.image}">` : "📦"}</div>
+            <div class="product-body">
+                <div class="product-name">${p.name}</div>
+                <div class="product-meta">
+                    <div class="meta-item">
+                        <div class="meta-label">Kategoriya</div>
+                        <div class="meta-value">${p.cat}</div>
+                    </div>
+                    <div class="meta-item">
+                        <div class="meta-label">ID</div>
+                        <div class="meta-value">#${p.id}</div>
+                    </div>
+                </div>
+                <div class="price-display" onclick="editPrice(${p.id})">${p.price.toLocaleString()} so'm</div>
+                <input type="number" class="edit-input" id="price-${p.id}" value="${p.price}" onblur="savePrice(${p.id})" onkeypress="handleKeyPress(event, ${p.id})">
+                <div class="product-actions">
+                    <button class="btn-small btn-edit" onclick="editProduct(${p.id})">Tahrir</button>
+                    <button class="btn-small btn-delete" onclick="deleteProduct(${p.id})">O'chirish</button>
+                </div>
+            </div>
+        </div>
+    `).join("");
+}
+
+function updateStats() {
+    document.getElementById("total-products").textContent = products.length;
+    document.getElementById("total-orders").textContent = stats.orders || 0;
+    document.getElementById("total-revenue").textContent = (stats.revenue || 0).toLocaleString() + " so'm";
+    
+    document.getElementById("stat-orders").textContent = stats.orders || 0;
+    document.getElementById("stat-revenue").textContent = (stats.revenue || 0).toLocaleString() + " so'm";
+    const avg = stats.orders > 0 ? Math.round(stats.revenue / stats.orders) : 0;
+    document.getElementById("stat-average").textContent = avg.toLocaleString() + " so'm";
+}
+
+function editPrice(id) {
+    const input = document.getElementById(`price-${id}`);
+    const display = document.querySelector(`[onclick="editPrice(${id})"]`);
+    display.style.display = "none";
+    input.classList.add("active");
+    input.focus();
+}
+
+async function savePrice(id) {
+    const input = document.getElementById(`price-${id}`);
+    const newPrice = parseInt(input.value);
+    
+    if (isNaN(newPrice) || newPrice < 0) {
+        showMessage("Narx noto'g'ri", "error");
+        input.value = products.find(p => p.id === id).price;
+        return;
+    }
+    
+    const product = products.find(p => p.id === id);
+    product.price = newPrice;
+    
+    await saveProducts("Narx yangilandi");
+    input.classList.remove("active");
+    renderProducts();
+}
+
+function handleKeyPress(e, id) {
+    if (e.key === "Enter") savePrice(id);
+    if (e.key === "Escape") {
+        const input = document.getElementById(`price-${id}`);
+        input.classList.remove("active");
+    }
+}
+
+function editProduct(id) {
+    // Kelajakda full edit modal qo'shamiz
+    alert("Tahrir funksiyasi kelajakda qo'shiladi");
+}
+
+async function deleteProduct(id) {
+    if (!confirm("Siz tasdiqlovmi?")) return;
+    
+    products = products.filter(p => p.id !== id);
+    await saveProducts("Mahsulot o'chirildi");
+    renderProducts();
+}
+
+function openAddModal() {
+    document.getElementById("addModal").classList.add("active");
+}
+
+function closeModal() {
+    document.getElementById("addModal").classList.remove("active");
+    document.getElementById("addForm").reset();
+}
+
+document.getElementById("addForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    
+    const newId = Math.max(...products.map(p => p.id), 0) + 1;
+    const newProduct = {
+        id: newId,
+        name: document.getElementById("add-name").value,
+        price: parseInt(document.getElementById("add-price").value),
+        cat: document.getElementById("add-category").value,
+        image: document.getElementById("add-image").value || ""
+    };
+    
+    products.push(newProduct);
+    await saveProducts("Mahsulot qo'shildi");
+    closeModal();
+    renderProducts();
+});
+
+async function saveProducts(message) {
+    try {
+        // Avval fayl SHA'sini olish
+        const res = await fetch(API_BASE + "products.json", {
+            headers: { "Authorization": `token ${GITHUB_TOKEN}` }
+        });
+        const data = await res.json();
+        
+        // Yangi kontent bilan yangilash
+        const updateRes = await fetch(API_BASE + "products.json", {
+            method: "PUT",
+            headers: { "Authorization": `token ${GITHUB_TOKEN}` },
+            body: JSON.stringify({
+                message: message,
+                content: btoa(JSON.stringify(products, null, 2)),
+                sha: data.sha
+            })
+        });
+        
+        if (updateRes.ok) {
+            showMessage("✅ " + message, "success");
+        }
+    } catch (e) {
+        showMessage("Saqlashda xatolik", "error");
+    }
+}
+
+function showMessage(text, type) {
+    const msgDiv = document.getElementById("message");
+    msgDiv.innerHTML = `<div class="${type}">${text}</div>`;
+    setTimeout(() => msgDiv.innerHTML = "", 4000);
+}
+
+// Tab o'tish
+document.querySelectorAll(".tab-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+        const tab = btn.getAttribute("data-tab");
+        document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+        document.querySelectorAll(".tab-content").forEach(c => c.classList.remove("active"));
+        btn.classList.add("active");
+        document.getElementById(tab).classList.add("active");
+    });
+});
+
+// Sahifani yuklash
+loadData();
+setInterval(loadData, 30000); // 30 soniyada yangilash
+</script>
+
+</body>
+</html>
