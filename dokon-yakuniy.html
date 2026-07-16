@@ -1,5 +1,3 @@
-Andijon shahar
-Jaxon bozori optom
 <!DOCTYPE html>
 <html lang="uz">
 <head>
@@ -7,7 +5,8 @@ Jaxon bozori optom
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Do'kon</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
-<style>href="https://maps.google.com/?q=40.7680,72.3450"  :root {
+<style>
+  :root {
     --bg: #f2f2f2;
     --text: #141414;
     --hint: #8a8a8a;
@@ -101,6 +100,11 @@ Jaxon bozori optom
     overflow: hidden;
   }
   .product .img-wrap img { width: 100%; height: 100%; object-fit: cover; }
+  .product .optom-badge {
+    position: absolute; top: 8px; left: 8px; z-index: 1;
+    background: var(--dark); color: #fff; font-size: 10px; font-weight: 700;
+    padding: 4px 9px; border-radius: 20px;
+  }
   .product .info { padding: 10px 10px 12px; }
   .product .name { font-size: 13.5px; font-weight: 600; line-height: 1.3; margin: 0 0 6px; min-height: 34px; }
   .product .price-row { display: flex; align-items: center; justify-content: space-between; }
@@ -115,6 +119,12 @@ Jaxon bozori optom
   }
   .product .qty-row button { width: 26px; height: 26px; border: none; background: transparent; color: #fff; font-size: 16px; font-weight: 700; }
   .product .qty-row span { color: #fff; font-weight: 700; font-size: 13px; }
+  .product .qty-row input {
+    width: 34px; text-align: center; background: transparent; border: none; color: #fff;
+    font-weight: 700; font-size: 13px; -moz-appearance: textfield;
+  }
+  .product .qty-row input::-webkit-outer-spin-button,
+  .product .qty-row input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
 
   .bottom-nav {
     position: fixed; bottom: 0; left: 0; right: 0; background: #fff;
@@ -149,6 +159,12 @@ Jaxon bozori optom
   .cart-row .qty-row { display: flex; align-items: center; gap: 8px; background: var(--dark); border-radius: 10px; padding: 4px 6px; }
   .cart-row .qty-row button { border: none; background: transparent; color: #fff; font-size: 15px; font-weight: 700; width: 20px; }
   .cart-row .qty-row span { color: #fff; font-size: 13px; font-weight: 700; }
+  .cart-row .qty-row input {
+    width: 40px; text-align: center; background: transparent; border: none; color: #fff;
+    font-weight: 700; font-size: 13px; -moz-appearance: textfield;
+  }
+  .cart-row .qty-row input::-webkit-outer-spin-button,
+  .cart-row .qty-row input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
   .empty-cart { text-align: center; color: var(--hint); padding: 60px 20px; font-size: 14px; }
 
   .checkout-btn-bar { position: fixed; bottom: 66px; left: 0; right: 0; padding: 10px 16px; background: linear-gradient(to top, var(--bg) 60%, transparent); }
@@ -159,6 +175,49 @@ Jaxon bozori optom
   #form-view label { display: block; font-size: 13px; color: var(--hint); margin: 12px 0 6px; font-weight: 600; }
   #form-view input, #form-view textarea { width: 100%; padding: 12px; border-radius: 12px; border: 1px solid #e2e2e2; background: #fff; font-size: 14px; }
   .back-link { color: var(--accent); font-size: 14px; font-weight: 700; display: inline-block; margin-bottom: 4px; }
+
+  #profile-view { padding: 16px 16px 8px; }
+
+  .cashback-card {
+    border-radius: 20px; padding: 20px; margin-bottom: 14px;
+    background: radial-gradient(120% 140% at 80% -10%, #3a3a3a 0%, #141414 55%, #050505 100%);
+    color: #fff; display: flex; align-items: center; gap: 14px;
+  }
+  .cashback-card .cb-icon {
+    width: 46px; height: 46px; border-radius: 12px; background: rgba(255,255,255,0.12);
+    display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0;
+  }
+  .cashback-card .cb-label { font-size: 13px; color: #cfcfcf; margin: 0 0 4px; }
+  .cashback-card .cb-amount { font-size: 26px; font-weight: 800; letter-spacing: -0.3px; }
+
+  .cashback-note {
+    display: flex; align-items: flex-start; gap: 8px; font-size: 12.5px; color: var(--hint);
+    padding: 0 4px; margin-bottom: 18px; line-height: 1.45;
+  }
+
+  .ref-card { background: var(--card); border-radius: 18px; padding: 18px; margin-bottom: 20px; }
+  .ref-card .ref-title { display: flex; align-items: center; gap: 8px; font-size: 16px; font-weight: 800; margin: 0 0 8px; }
+  .ref-card .ref-desc { font-size: 13.5px; color: var(--hint); line-height: 1.45; margin: 0 0 16px; }
+  .ref-card .ref-desc b { color: var(--text); }
+  .ref-card .ref-bottom { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+  .ref-card .ref-count { font-size: 13.5px; font-weight: 600; }
+  .ref-card .share-btn {
+    background: var(--dark); color: #fff; border: none; font-size: 13.5px; font-weight: 700;
+    padding: 12px 18px; border-radius: 14px; white-space: nowrap;
+  }
+
+  .orders-heading { font-size: 17px; font-weight: 800; margin: 0 0 10px; }
+  .empty-orders { text-align: center; color: var(--hint); padding: 30px 20px; font-size: 14px; line-height: 1.5; }
+  .continue-btn {
+    display: block; width: 100%; text-align: center; font-weight: 700; font-size: 14px;
+    color: var(--text); margin-top: 6px; padding: 14px; border-radius: 14px; border: none; background: transparent;
+  }
+  .order-card { background: var(--card); border-radius: 14px; padding: 12px 14px; margin-bottom: 10px; }
+  .order-card .o-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+  .order-card .o-date { font-size: 12px; color: var(--hint); }
+  .order-card .o-cb { font-size: 12px; color: var(--accent); font-weight: 700; }
+  .order-card .o-items { font-size: 13px; color: var(--hint); margin-bottom: 4px; }
+  .order-card .o-total { font-size: 14px; font-weight: 800; }
 </style>
 </head>
 <body>
@@ -184,7 +243,7 @@ Jaxon bozori optom
 
   <div class="location-bar">
     <div class="pin">📍</div>
-    <div class="addr">Jaxon bozori<br>Andijon shahar</div>
+    <div class="addr">Toshkent shahar<br>Chilonzor tumani</div>
     <button class="go-btn">➤ Xaritada</button>
   </div>
 
@@ -210,6 +269,33 @@ Jaxon bozori optom
   <textarea id="f-address" rows="2" placeholder="Shahar, tuman, ko'cha, uy"></textarea>
   <label>Izoh (ixtiyoriy)</label>
   <textarea id="f-note" rows="2" placeholder="Qo'shimcha izoh"></textarea>
+</div>
+
+<div id="profile-view" class="hidden">
+  <div class="cashback-card">
+    <div class="cb-icon">👛</div>
+    <div>
+      <p class="cb-label">Keshbek balansi</p>
+      <div class="cb-amount" id="cb-amount">0 so'm</div>
+    </div>
+  </div>
+
+  <div class="cashback-note">🎁 <span>Har xariddan 1% keshbek · balansni keyingi buyurtmaga ishlatasiz</span></div>
+
+  <div class="ref-card">
+    <p class="ref-title">👥 Do'stlarni taklif qiling</p>
+    <p class="ref-desc">Havolangiz orqali kelgan har bir do'stingizning xarididan <b>1%</b> sizga keshbek.</p>
+    <div class="ref-bottom">
+      <span class="ref-count">Takliflar: <b id="ref-count">0</b></span>
+      <button class="share-btn" id="share-ref-btn">📤 Havolani ulashish</button>
+    </div>
+  </div>
+
+  <div class="orders-section">
+    <p class="orders-heading">Buyurtmalar tarixi</p>
+    <div id="orders-list"></div>
+    <button class="continue-btn" id="continue-shop-btn">Xaridni davom ettirish</button>
+  </div>
 </div>
 
 <div class="checkout-btn-bar hidden" id="checkout-bar">
@@ -238,15 +324,11 @@ const SHOP_SUB = "Optom va chakana · Toshkent";
 const SHOP_LOGO_URL = "";
 
 const GITHUB_BASE = "https://raw.githubusercontent.com/abdulhodiyamirdin-777/Dokon/main/";
+const BOT_USERNAME = "Abdulhodiy777bot";
 
-const CATEGORIES = ["Hammasi", "Elektronika", "Avto ehtiyot qismlari"];
-
-const PRODUCTS = [
-  { id: 1, name: "Video karta", price: 100000, image: GITHUB_BASE + "IMG_20260711_071756_495.jpg", cat: "Elektronika" },
-  { id: 2, name: "Shayton", price: 80000, image: GITHUB_BASE + "IMG_20260711_071756_481.jpg", cat: "Elektronika" },
-  { id: 3, name: "Kulichator", price: 25000, image: GITHUB_BASE + "IMG_20260711_071755_751.jpg", cat: "Elektronika" },
-  { id: 4, name: "Avto zapchast pachinnik", price: 150000, image: GITHUB_BASE + "IMG_20260711_071756_876.jpg", cat: "Avto ehtiyot qismlari" },
-];
+let PRODUCTS = [];
+let CATEGORIES = ["Hammasi"];
+let USERS = {};
 /* ============================================================ */
 
 document.getElementById("shop-name").textContent = SHOP_NAME;
@@ -293,7 +375,10 @@ function renderProducts() {
     const card = document.createElement("div");
     card.className = "product";
     card.innerHTML = `
-      <div class="img-wrap">${productMedia(p)}</div>
+      <div class="img-wrap">
+        ${p.optom ? '<span class="optom-badge">Optom bor</span>' : ''}
+        ${productMedia(p)}
+      </div>
       <div class="info">
         <p class="name">${p.name}</p>
         <div class="price-row">
@@ -302,7 +387,7 @@ function renderProducts() {
             ? `<button class="add-btn" data-add="${p.id}">+</button>`
             : `<div class="qty-row">
                  <button data-minus="${p.id}">−</button>
-                 <span>${qty}</span>
+                 <input type="number" inputmode="numeric" min="1" data-qty-input="${p.id}" value="${qty}">
                  <button data-plus="${p.id}">+</button>
                </div>`
           }
@@ -324,6 +409,16 @@ document.getElementById("product-grid").addEventListener("click", (e) => {
   updateBadges();
 });
 
+document.getElementById("product-grid").addEventListener("change", (e) => {
+  const id = e.target.getAttribute("data-qty-input");
+  if (!id) return;
+  let val = parseInt(e.target.value, 10);
+  if (isNaN(val) || val < 1) val = 1;
+  cart[id] = val;
+  renderProducts();
+  updateBadges();
+});
+
 function updateBadges() {
   const count = cartCount();
   const badge = document.getElementById("cart-badge");
@@ -334,20 +429,21 @@ function updateBadges() {
   });
 }
 
-const tabs = { shop: "shop-view", cart: "cart-view", fav: null, profile: null };
+const tabs = { shop: "shop-view", cart: "cart-view", fav: null, profile: "profile-view" };
 document.querySelectorAll(".nav-item").forEach(item => {
   item.addEventListener("click", () => {
     const tab = item.getAttribute("data-tab");
-    if (tab === "fav" || tab === "profile") {
+    if (tab === "fav") {
       tg.showAlert("Bu bo'lim tez orada qo'shiladi 🙂");
       return;
     }
     document.querySelectorAll(".nav-item").forEach(i => i.classList.remove("active"));
     item.classList.add("active");
-    ["shop-view","cart-view","form-view"].forEach(id => document.getElementById(id).classList.add("hidden"));
+    ["shop-view","cart-view","form-view","profile-view"].forEach(id => document.getElementById(id).classList.add("hidden"));
     document.getElementById(tabs[tab]).classList.remove("hidden");
     document.getElementById("checkout-bar").classList.toggle("hidden", tab !== "cart" || cartCount() === 0);
     if (tab === "cart") renderCart();
+    if (tab === "profile") renderProfile();
   });
 });
 
@@ -374,7 +470,7 @@ function renderCart() {
       </div>
       <div class="qty-row">
         <button data-cminus="${p.id}">−</button>
-        <span>${qty}</span>
+        <input type="number" inputmode="numeric" min="1" data-cqty-input="${p.id}" value="${qty}">
         <button data-cplus="${p.id}">+</button>
       </div>
     `;
@@ -387,6 +483,17 @@ document.getElementById("cart-items").addEventListener("click", (e) => {
   const minus = e.target.getAttribute("data-cminus");
   if (plus) cart[plus] = (cart[plus] || 0) + 1;
   if (minus) { cart[minus] -= 1; if (cart[minus] <= 0) delete cart[minus]; }
+  renderCart();
+  updateBadges();
+  document.getElementById("checkout-bar").classList.toggle("hidden", cartCount() === 0);
+});
+
+document.getElementById("cart-items").addEventListener("change", (e) => {
+  const id = e.target.getAttribute("data-cqty-input");
+  if (!id) return;
+  let val = parseInt(e.target.value, 10);
+  if (isNaN(val) || val < 1) val = 1;
+  cart[id] = val;
   renderCart();
   updateBadges();
   document.getElementById("checkout-bar").classList.toggle("hidden", cartCount() === 0);
@@ -431,14 +538,77 @@ document.getElementById("form-back").addEventListener("click", () => {
   document.getElementById("checkout-btn").textContent = "Buyurtmaga o'tish";
 });
 
-renderCategories();
-renderProducts();
+async function loadProducts() {
+  try {
+    const res = await fetch(GITHUB_BASE + "products.json?t=" + Date.now());
+    const data = await res.json();
+    PRODUCTS = data.map(p => ({
+      ...p,
+      image: p.image ? GITHUB_BASE + p.image : ""
+    }));
+    const cats = [...new Set(PRODUCTS.map(p => p.cat))];
+    CATEGORIES = ["Hammasi", ...cats];
+  } catch (e) {
+    document.getElementById("product-grid").innerHTML =
+      '<p style="grid-column:1/-1;text-align:center;color:#999;padding:30px 0;">Mahsulotlarni yuklab bo\'lmadi</p>';
+  }
+  renderCategories();
+  renderProducts();
+}
+
+function getCurrentUserId() {
+  const u = tg.initDataUnsafe && tg.initDataUnsafe.user;
+  return u ? String(u.id) : null;
+}
+
+async function loadUsers() {
+  try {
+    const res = await fetch(GITHUB_BASE + "users.json?t=" + Date.now());
+    USERS = await res.json();
+  } catch (e) {
+    USERS = {};
+  }
+  renderProfile();
+}
+
+function renderProfile() {
+  const uid = getCurrentUserId();
+  const me = (uid && USERS[uid]) ? USERS[uid] : { cashback_balance: 0, referral_count: 0, orders: [] };
+
+  document.getElementById("cb-amount").textContent = fmt(me.cashback_balance || 0);
+  document.getElementById("ref-count").textContent = me.referral_count || 0;
+
+  const list = document.getElementById("orders-list");
+  const orders = me.orders || [];
+  if (orders.length === 0) {
+    list.innerHTML = '<div class="empty-orders">Hali buyurtma yo\'q</div>';
+  } else {
+    list.innerHTML = orders.slice().reverse().map(o => `
+      <div class="order-card">
+        <div class="o-top">
+          <span class="o-date">${o.date || ""}</span>
+          <span class="o-cb">+${fmt(o.cashback_earned || 0)}</span>
+        </div>
+        <div class="o-items">${(o.items || []).map(i => i.name + " ×" + i.qty).join(", ")}</div>
+        <div class="o-total">${fmt(o.total || 0)}</div>
+      </div>
+    `).join("");
+  }
+}
+
+document.getElementById("share-ref-btn").addEventListener("click", () => {
+  const uid = getCurrentUserId();
+  const link = `https://t.me/${BOT_USERNAME}?start=ref${uid || ""}`;
+  const text = "Bu do'kondan xarid qiling, ikkimizga ham keshbek tushadi! 🎁";
+  tg.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encodeURIComponent(text)}`);
+});
+
+document.getElementById("continue-shop-btn").addEventListener("click", () => {
+  document.querySelector('.nav-item[data-tab="shop"]').click();
+});
+
+loadProducts();
+loadUsers();
 </script>
 </body>
 </html>
-Jaxon bozori
-Andijon shahar
-Jaxon bozori
-Andijon shahar
-href="https://maps.google.com/?q=40.7680,72.3450"
-
