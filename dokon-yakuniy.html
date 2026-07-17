@@ -218,6 +218,64 @@
   .order-card .o-cb { font-size: 12px; color: var(--accent); font-weight: 700; }
   .order-card .o-items { font-size: 13px; color: var(--hint); margin-bottom: 4px; }
   .order-card .o-total { font-size: 14px; font-weight: 800; }
+
+  #detail-view { padding-bottom: 90px; }
+  .detail-top { position: relative; }
+  .detail-close {
+    position: absolute; top: 16px; left: 16px; z-index: 2;
+    width: 36px; height: 36px; border-radius: 50%; border: none;
+    background: rgba(255,255,255,0.9); font-size: 15px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .detail-gallery {
+    width: 100%; aspect-ratio: 1 / 1; background: #eee;
+    display: flex; align-items: center; justify-content: center; font-size: 80px; overflow: hidden;
+  }
+  .detail-gallery img { width: 100%; height: 100%; object-fit: cover; }
+
+  .detail-card {
+    background: var(--card); border-radius: 22px 22px 0 0; margin-top: -20px;
+    position: relative; padding: 20px 16px 8px;
+  }
+  .detail-cat { font-size: 11px; font-weight: 800; letter-spacing: 0.6px; color: var(--hint); text-transform: uppercase; margin: 0 0 6px; }
+  .detail-name { font-size: 24px; font-weight: 800; margin: 0 0 10px; letter-spacing: -0.4px; }
+  .detail-price { font-size: 22px; font-weight: 800; margin-bottom: 14px; }
+
+  .tier-box { background: var(--bg); border-radius: 14px; padding: 12px 14px; font-size: 13.5px; margin-bottom: 18px; }
+  .tier-box b { font-weight: 800; }
+
+  .block { margin-bottom: 22px; }
+  .block-label { font-size: 15px; font-weight: 700; margin: 0 0 10px; }
+  .accent-label { color: var(--accent); font-weight: 700; }
+
+  .variant-row { display: flex; gap: 10px; }
+  .variant-thumb {
+    width: 58px; height: 58px; border-radius: 12px; overflow: hidden; background: #eee;
+    border: 2px solid transparent; display: flex; align-items: center; justify-content: center; font-size: 24px;
+  }
+  .variant-thumb.selected { border-color: var(--accent); }
+  .variant-thumb img { width: 100%; height: 100%; object-fit: cover; }
+
+  .qty-block-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .qty-stepper { display: flex; align-items: center; gap: 16px; background: var(--bg); border-radius: 14px; padding: 6px 8px; }
+  .qty-stepper button {
+    width: 34px; height: 34px; border-radius: 10px; border: none; background: #fff;
+    font-size: 18px; font-weight: 700; display: flex; align-items: center; justify-content: center;
+  }
+  .qty-stepper span { font-size: 15px; font-weight: 700; min-width: 20px; text-align: center; }
+  .bulk-pill { border: 1.5px solid var(--dark); background: transparent; border-radius: 14px; padding: 10px 14px; font-size: 13px; font-weight: 700; }
+
+  .rate-input { font-size: 26px; letter-spacing: 4px; margin-bottom: 10px; color: #ddd; }
+  .rate-input span.filled { color: #f5a623; }
+  #review-text {
+    width: 100%; padding: 12px; border-radius: 12px; border: 1px solid #e2e2e2; background: var(--bg);
+    font-size: 14px; margin-bottom: 10px; font-family: inherit;
+  }
+  .review-btn { background: var(--dark); color: #fff; border: none; padding: 12px 16px; border-radius: 12px; font-size: 13.5px; font-weight: 700; margin-bottom: 16px; }
+  .review-item { padding: 12px 0; border-top: 1px solid #eee; }
+  .review-item .r-stars { color: #f5a623; font-size: 13px; margin-bottom: 4px; }
+  .review-item .r-text { font-size: 13.5px; color: var(--text); }
+  .review-empty { color: var(--hint); font-size: 13px; padding: 10px 0; }
 </style>
 </head>
 <body>
@@ -298,6 +356,51 @@
   </div>
 </div>
 
+<div id="detail-view" class="hidden">
+  <div class="detail-top">
+    <button class="detail-close" id="detail-close-btn">✕</button>
+    <div class="detail-gallery" id="detail-gallery"></div>
+  </div>
+  <div class="detail-card">
+    <p class="detail-cat" id="detail-cat"></p>
+    <h1 class="detail-name" id="detail-name"></h1>
+    <div class="detail-price" id="detail-price"></div>
+
+    <div class="tier-box hidden" id="tier-box"></div>
+
+    <div class="block hidden" id="variant-block">
+      <p class="block-label">Rang · <span class="accent-label" id="variant-status">tanlang</span></p>
+      <div class="variant-row" id="variant-row"></div>
+    </div>
+
+    <div class="block">
+      <p class="block-label">Miqdor</p>
+      <div class="qty-block-row">
+        <div class="qty-stepper">
+          <button id="detail-qty-minus">−</button>
+          <span id="detail-qty-value">1</span>
+          <button id="detail-qty-plus">+</button>
+        </div>
+        <button class="bulk-pill hidden" id="bulk-pill"></button>
+      </div>
+    </div>
+
+    <div class="block">
+      <p class="block-label">Sharhlar</p>
+      <div class="rate-input" id="rate-input">
+        <span data-star="1">☆</span><span data-star="2">☆</span><span data-star="3">☆</span><span data-star="4">☆</span><span data-star="5">☆</span>
+      </div>
+      <textarea id="review-text" rows="2" placeholder="Fikringiz (ixtiyoriy)"></textarea>
+      <button class="review-btn" id="review-submit-btn">Sharh qoldirish</button>
+      <div id="review-list"></div>
+    </div>
+  </div>
+
+  <div class="checkout-btn-bar" id="detail-bar">
+    <button id="detail-cta-btn">🛒 Savatga qo'shish</button>
+  </div>
+</div>
+
 <div class="checkout-btn-bar hidden" id="checkout-bar">
   <button id="checkout-btn">Buyurtmaga o'tish</button>
 </div>
@@ -329,6 +432,11 @@ const BOT_USERNAME = "Abdulhodiy777bot";
 let PRODUCTS = [];
 let CATEGORIES = ["Hammasi"];
 let USERS = {};
+let REVIEWS = {};
+let detailProduct = null;
+let detailVariant = null;
+let detailQty = 1;
+let selectedRating = 0;
 /* ============================================================ */
 
 document.getElementById("shop-name").textContent = SHOP_NAME;
@@ -342,10 +450,20 @@ let activeCat = "Hammasi";
 
 function fmt(n) { return n.toLocaleString("ru-RU") + " so'm"; }
 function cartCount() { return Object.values(cart).reduce((a,b)=>a+b,0); }
+function getUnitPrice(p, qty) {
+  if (!p.tiers || !p.tiers.length) return p.price;
+  let price = p.price;
+  p.tiers.forEach(t => { if (qty >= t.min_qty) price = t.price; });
+  return price;
+}
+function nextTier(p, qty) {
+  if (!p.tiers) return null;
+  return p.tiers.find(t => qty < t.min_qty) || null;
+}
 function cartTotal() {
   return Object.entries(cart).reduce((sum,[id,qty]) => {
     const p = PRODUCTS.find(p => p.id == id);
-    return sum + p.price * qty;
+    return sum + getUnitPrice(p, qty) * qty;
   }, 0);
 }
 function productMedia(p) {
@@ -374,6 +492,7 @@ function renderProducts() {
     const qty = cart[p.id] || 0;
     const card = document.createElement("div");
     card.className = "product";
+    card.setAttribute("data-id", p.id);
     card.innerHTML = `
       <div class="img-wrap">
         ${p.optom ? '<span class="optom-badge">Optom bor</span>' : ''}
@@ -382,7 +501,7 @@ function renderProducts() {
       <div class="info">
         <p class="name">${p.name}</p>
         <div class="price-row">
-          <span class="price">${fmt(p.price)}</span>
+          <span class="price">${fmt(getUnitPrice(p, qty || 1))}</span>
           ${qty === 0
             ? `<button class="add-btn" data-add="${p.id}">+</button>`
             : `<div class="qty-row">
@@ -402,11 +521,12 @@ document.getElementById("product-grid").addEventListener("click", (e) => {
   const add = e.target.getAttribute("data-add");
   const plus = e.target.getAttribute("data-plus");
   const minus = e.target.getAttribute("data-minus");
-  if (add) cart[add] = (cart[add] || 0) + 1;
-  if (plus) cart[plus] = (cart[plus] || 0) + 1;
-  if (minus) { cart[minus] -= 1; if (cart[minus] <= 0) delete cart[minus]; }
-  renderProducts();
-  updateBadges();
+  if (add) { cart[add] = (cart[add] || 0) + 1; renderProducts(); updateBadges(); return; }
+  if (plus) { cart[plus] = (cart[plus] || 0) + 1; renderProducts(); updateBadges(); return; }
+  if (minus) { cart[minus] -= 1; if (cart[minus] <= 0) delete cart[minus]; renderProducts(); updateBadges(); return; }
+  if (e.target.tagName === "INPUT") return;
+  const card = e.target.closest(".product");
+  if (card) openDetail(card.getAttribute("data-id"));
 });
 
 document.getElementById("product-grid").addEventListener("change", (e) => {
@@ -466,7 +586,7 @@ function renderCart() {
       <div class="thumb">${productMedia(p)}</div>
       <div style="flex:1">
         <div class="cname">${p.name}</div>
-        <div class="cprice">${fmt(p.price)}</div>
+        <div class="cprice">${fmt(getUnitPrice(p, qty))}</div>
       </div>
       <div class="qty-row">
         <button data-cminus="${p.id}">−</button>
@@ -520,9 +640,10 @@ document.getElementById("checkout-btn").addEventListener("click", () => {
   }
 
   const order = {
+    type: "order",
     items: Object.entries(cart).map(([id, qty]) => {
       const p = PRODUCTS.find(p => p.id == id);
-      return { name: p.name, qty, price: p.price };
+      return { name: p.name, qty, price: getUnitPrice(p, qty) };
     }),
     total: cartTotal(),
     name, phone, address, note,
@@ -607,8 +728,185 @@ document.getElementById("continue-shop-btn").addEventListener("click", () => {
   document.querySelector('.nav-item[data-tab="shop"]').click();
 });
 
+// ==============================================================
+// Mahsulot batafsil sahifasi
+// ==============================================================
+
+function openDetail(id) {
+  const p = PRODUCTS.find(p => p.id == id);
+  if (!p) return;
+  detailProduct = p;
+  detailVariant = null;
+  detailQty = 1;
+  selectedRating = 0;
+
+  document.getElementById("detail-cat").textContent = p.cat || "";
+  document.getElementById("detail-name").textContent = p.name;
+  document.getElementById("review-text").value = "";
+  setStarRating(0);
+  renderDetailGallery();
+  renderDetailVariants();
+  renderDetailQty();
+  renderDetailReviews();
+  updateDetailCta();
+
+  ["shop-view","cart-view","form-view","profile-view"].forEach(vid => document.getElementById(vid).classList.add("hidden"));
+  document.getElementById("checkout-bar").classList.add("hidden");
+  document.getElementById("detail-view").classList.remove("hidden");
+}
+
+function renderDetailGallery() {
+  const g = document.getElementById("detail-gallery");
+  const img = detailVariant ? detailVariant.image : detailProduct.image;
+  g.innerHTML = img ? `<img src="${img}">` : (detailProduct.emoji || "📦");
+}
+
+function renderDetailPrice() {
+  document.getElementById("detail-price").textContent = fmt(getUnitPrice(detailProduct, detailQty));
+}
+
+function renderDetailTierBox() {
+  const box = document.getElementById("tier-box");
+  if (!detailProduct.tiers || !detailProduct.tiers.length) {
+    box.classList.add("hidden");
+    return;
+  }
+  box.classList.remove("hidden");
+  const nt = nextTier(detailProduct, detailQty);
+  if (nt) {
+    box.innerHTML = `📦 <b>${nt.min_qty}+ dona</b> — <b>${fmt(nt.price)}</b> / dona`;
+  } else {
+    const top = detailProduct.tiers[detailProduct.tiers.length - 1];
+    box.innerHTML = `📦 Optom narx qo'llanildi — <b>${fmt(top.price)}</b> / dona`;
+  }
+}
+
+function renderDetailVariants() {
+  const block = document.getElementById("variant-block");
+  const row = document.getElementById("variant-row");
+  if (!detailProduct.variants || !detailProduct.variants.length) {
+    block.classList.add("hidden");
+    return;
+  }
+  block.classList.remove("hidden");
+  document.getElementById("variant-status").textContent = detailVariant ? detailVariant.name : "tanlang";
+  row.innerHTML = detailProduct.variants.map((v, i) => `
+    <div class="variant-thumb${detailVariant === v ? ' selected' : ''}" data-variant-idx="${i}">
+      ${v.image ? `<img src="${v.image}">` : "🎨"}
+    </div>
+  `).join("");
+}
+
+document.getElementById("variant-row").addEventListener("click", (e) => {
+  const el = e.target.closest("[data-variant-idx]");
+  if (!el) return;
+  detailVariant = detailProduct.variants[el.getAttribute("data-variant-idx")];
+  renderDetailGallery();
+  renderDetailVariants();
+  updateDetailCta();
+});
+
+function renderDetailQty() {
+  document.getElementById("detail-qty-value").textContent = detailQty;
+  renderDetailPrice();
+  renderDetailTierBox();
+  const nt = nextTier(detailProduct, detailQty);
+  const pill = document.getElementById("bulk-pill");
+  if (nt) {
+    pill.classList.remove("hidden");
+    pill.textContent = `${nt.min_qty} dona — optom narx`;
+    pill.onclick = () => { detailQty = nt.min_qty; renderDetailQty(); };
+  } else {
+    pill.classList.add("hidden");
+  }
+}
+
+document.getElementById("detail-qty-minus").addEventListener("click", () => {
+  if (detailQty > 1) { detailQty--; renderDetailQty(); }
+});
+document.getElementById("detail-qty-plus").addEventListener("click", () => {
+  detailQty++; renderDetailQty();
+});
+
+function updateDetailCta() {
+  const btn = document.getElementById("detail-cta-btn");
+  const needsVariant = detailProduct.variants && detailProduct.variants.length && !detailVariant;
+  btn.textContent = needsVariant ? "Rangni tanlang" : "🛒 Savatga qo'shish";
+}
+
+document.getElementById("detail-cta-btn").addEventListener("click", () => {
+  if (detailProduct.variants && detailProduct.variants.length && !detailVariant) {
+    tg.showAlert("Iltimos, avval rangni tanlang");
+    return;
+  }
+  cart[detailProduct.id] = (cart[detailProduct.id] || 0) + detailQty;
+  updateBadges();
+  renderProducts();
+  document.getElementById("detail-close-btn").click();
+});
+
+document.getElementById("detail-close-btn").addEventListener("click", () => {
+  document.getElementById("detail-view").classList.add("hidden");
+  document.querySelector('.nav-item[data-tab="shop"]').click();
+});
+
+// ---- Sharhlar (baho + izoh) ----
+
+function setStarRating(n) {
+  selectedRating = n;
+  document.querySelectorAll("#rate-input span").forEach(s => {
+    const filled = +s.getAttribute("data-star") <= n;
+    s.textContent = filled ? "★" : "☆";
+    s.classList.toggle("filled", filled);
+  });
+}
+
+document.getElementById("rate-input").addEventListener("click", (e) => {
+  const star = e.target.getAttribute("data-star");
+  if (star) setStarRating(+star);
+});
+
+async function loadReviews() {
+  try {
+    const res = await fetch(GITHUB_BASE + "reviews.json?t=" + Date.now());
+    REVIEWS = await res.json();
+  } catch (e) {
+    REVIEWS = {};
+  }
+}
+
+function renderDetailReviews() {
+  const list = document.getElementById("review-list");
+  const items = REVIEWS[detailProduct.id] || [];
+  if (items.length === 0) {
+    list.innerHTML = '<div class="review-empty">Hali sharh yo\'q — birinchi bo\'ling!</div>';
+    return;
+  }
+  list.innerHTML = items.slice().reverse().map(r => `
+    <div class="review-item">
+      <div class="r-stars">${"★".repeat(r.rating)}${"☆".repeat(5 - r.rating)}</div>
+      ${r.comment ? `<div class="r-text">${r.comment}</div>` : ""}
+    </div>
+  `).join("");
+}
+
+document.getElementById("review-submit-btn").addEventListener("click", () => {
+  if (selectedRating === 0) {
+    tg.showAlert("Iltimos, yulduzcha bilan baho bering");
+    return;
+  }
+  const comment = document.getElementById("review-text").value.trim();
+  tg.sendData(JSON.stringify({
+    type: "review",
+    product_id: detailProduct.id,
+    rating: selectedRating,
+    comment,
+  }));
+});
+
 loadProducts();
 loadUsers();
+loadReviews();
 </script>
 </body>
 </html>

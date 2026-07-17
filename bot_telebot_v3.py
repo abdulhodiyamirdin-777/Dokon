@@ -105,6 +105,59 @@ def process_order_cashback(user_id, order):
 
 
 # ==============================================================
+# reviews.json bilan ishlash (mahsulot sharhlari)
+# ==============================================================
+
+def _reviews_api_url():
+    return f"https://api.github.com/repos/{GITHUB_REPO}/contents/reviews.json"
+
+
+def get_reviews():
+    try:
+        r = requests.get(_reviews_api_url(), headers={"Authorization": f"token {GITHUB_TOKEN}"})
+        r.raise_for_status()
+        content = base64.b64decode(r.json()["content"]).decode("utf-8")
+        return json.loads(content)
+    except Exception as e:
+        print("reviews.json o'qilmadi:", e)
+        return {}
+
+
+def save_reviews(reviews, commit_message):
+    try:
+        r = requests.get(_reviews_api_url(), headers={"Authorization": f"token {GITHUB_TOKEN}"})
+        sha = r.json().get("sha") if r.status_code == 200 else None
+        payload = {
+            "message": commit_message,
+            "content": base64.b64encode(
+                json.dumps(reviews, ensure_ascii=False, indent=2).encode("utf-8")
+            ).decode("utf-8"),
+        }
+        if sha:
+            payload["sha"] = sha
+        requests.put(_reviews_api_url(), headers={"Authorization": f"token {GITHUB_TOKEN}"}, json=payload)
+    except Exception as e:
+        print("reviews.json yozilmadi:", e)
+
+
+def process_review(user_id, data):
+    product_id = str(data.get("product_id"))
+    rating = int(data.get("rating", 0))
+    comment = data.get("comment", "")
+
+    reviews = get_reviews()
+    if product_id not in reviews:
+        reviews[product_id] = []
+    reviews[product_id].append({
+        "user_id": str(user_id),
+        "rating": rating,
+        "comment": comment,
+        "date": datetime.now().strftime("%d.%m.%Y"),
+    })
+    save_reviews(reviews, f"Sharh: mahsulot {product_id}, {rating} yulduz")
+
+
+# ==============================================================
 # Bot handlerlar
 # ==============================================================
 
@@ -133,10 +186,21 @@ def start_handler(message):
 @bot.message_handler(content_types=["web_app_data"])
 def web_app_data_handler(message):
     try:
-        order = json.loads(message.web_app_data.data)
+        data = json.loads(message.web_app_data.data)
     except Exception:
         bot.send_message(message.chat.id, "Xatolik yuz berdi, qaytadan urinib ko'ring.")
         return
+
+    if data.get("type") == "review":
+        try:
+            process_review(message.from_user.id, data)
+            bot.send_message(message.chat.id, "✅ Sharhingiz uchun rahmat!")
+        except Exception as e:
+            print("Sharh saqlanmadi:", e)
+            bot.send_message(message.chat.id, "Xatolik yuz berdi, qaytadan urinib ko'ring.")
+        return
+
+    order = data
 
     lines = ["🆕 <b>Yangi buyurtma</b>\n"]
     for item in order.get("items", []):
