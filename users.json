@@ -1,1 +1,20 @@
-{}
+{
+  "6291211053": {
+    "cashback_balance": 4000,
+    "referred_by": null,
+    "referral_count": 0,
+    "orders": [
+      {
+        "date": "17.07.2026",
+        "items": [
+          {
+            "name": "Video karta",
+            "qty": 4
+          }
+        ],
+        "total": 400000,
+        "cashback_earned": 4000
+      }
+    ]
+  }
+}
