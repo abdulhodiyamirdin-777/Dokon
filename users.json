@@ -1,1 +1,35 @@
-{}
+{
+  "6291211053": {
+    "cashback_balance": 9000,
+    "referred_by": null,
+    "referral_count": 0,
+    "orders": [
+      {
+        "date": "17.07.2026",
+        "items": [
+          {
+            "name": "Video karta",
+            "qty": 4
+          }
+        ],
+        "total": 400000,
+        "cashback_earned": 4000
+      },
+      {
+        "date": "17.07.2026",
+        "items": [
+          {
+            "name": "Video karta",
+            "qty": 2
+          },
+          {
+            "name": "Avto zapchast pachinnik",
+            "qty": 2
+          }
+        ],
+        "total": 500000,
+        "cashback_earned": 5000
+      }
+    ]
+  }
+}
