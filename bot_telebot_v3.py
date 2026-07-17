@@ -1,18 +1,122 @@
 import telebot
 from telebot import types
 import json
+import os
+import base64
+import requests
+from datetime import datetime
 from github_helper import get_stats, save_stats
 
 # ---- Sozlamalar ----
-BOT_TOKEN = "8881803852:AAFJ6Uuk1uUFdUsfH3elrpP177aOsLR32Ok"
+BOT_TOKEN = os.environ.get("BOT_TOKEN", "")
 WEBAPP_URL = "https://abdulhodiyamirdin-777.github.io/Dokon/dokon-yakuniy.html"
 ADMIN_CHAT_ID = 8881459774
+
+GITHUB_REPO = "abdulhodiyamirdin-777/Dokon"
+GITHUB_TOKEN = os.environ.get("GITHUB_TOKEN", "")
+CASHBACK_RATE = 0.01  # 1%
 
 bot = telebot.TeleBot(BOT_TOKEN)
 
 
+# ==============================================================
+# users.json bilan ishlash (keshbek + referal ma'lumotlari)
+# Bu funksiyalar github_helper.py'ga bog'liq emas - mustaqil ishlaydi
+# ==============================================================
+
+def _users_api_url():
+    return f"https://api.github.com/repos/{GITHUB_REPO}/contents/users.json"
+
+
+def get_users():
+    try:
+        r = requests.get(_users_api_url(), headers={"Authorization": f"token {GITHUB_TOKEN}"})
+        r.raise_for_status()
+        content = base64.b64decode(r.json()["content"]).decode("utf-8")
+        return json.loads(content)
+    except Exception as e:
+        print("users.json o'qilmadi:", e)
+        return {}
+
+
+def save_users(users, commit_message):
+    try:
+        r = requests.get(_users_api_url(), headers={"Authorization": f"token {GITHUB_TOKEN}"})
+        sha = r.json().get("sha") if r.status_code == 200 else None
+        payload = {
+            "message": commit_message,
+            "content": base64.b64encode(
+                json.dumps(users, ensure_ascii=False, indent=2).encode("utf-8")
+            ).decode("utf-8"),
+        }
+        if sha:
+            payload["sha"] = sha
+        requests.put(_users_api_url(), headers={"Authorization": f"token {GITHUB_TOKEN}"}, json=payload)
+    except Exception as e:
+        print("users.json yozilmadi:", e)
+
+
+def ensure_user(users, user_id):
+    user_id = str(user_id)
+    if user_id not in users:
+        users[user_id] = {
+            "cashback_balance": 0,
+            "referred_by": None,
+            "referral_count": 0,
+            "orders": [],
+        }
+    return users[user_id]
+
+
+def register_referral(new_user_id, referrer_id):
+    new_user_id, referrer_id = str(new_user_id), str(referrer_id)
+    if new_user_id == referrer_id:
+        return
+    users = get_users()
+    me = ensure_user(users, new_user_id)
+    if me["referred_by"] is not None:
+        return  # allaqachon ro'yxatdan o'tgan, qayta yozilmaydi
+    me["referred_by"] = referrer_id
+    ensure_user(users, referrer_id)["referral_count"] += 1
+    save_users(users, f"Referal: {referrer_id} <- {new_user_id}")
+
+
+def process_order_cashback(user_id, order):
+    user_id = str(user_id)
+    total = order.get("total", 0)
+    items = order.get("items", [])
+
+    users = get_users()
+    me = ensure_user(users, user_id)
+
+    earned = round(total * CASHBACK_RATE)
+    me["cashback_balance"] += earned
+    me["orders"].append({
+        "date": datetime.now().strftime("%d.%m.%Y"),
+        "items": [{"name": i["name"], "qty": i["qty"]} for i in items],
+        "total": total,
+        "cashback_earned": earned,
+    })
+
+    if me["referred_by"]:
+        ensure_user(users, me["referred_by"])["cashback_balance"] += round(total * CASHBACK_RATE)
+
+    save_users(users, f"Buyurtma: {user_id} (+{earned} keshbek)")
+
+
+# ==============================================================
+# Bot handlerlar
+# ==============================================================
+
 @bot.message_handler(commands=["start"])
 def start_handler(message):
+    parts = message.text.split(maxsplit=1)
+    if len(parts) > 1 and parts[1].startswith("ref"):
+        try:
+            register_referral(message.from_user.id, parts[1][3:])
+        except Exception as e:
+            print("Referal yozilmadi:", e)
+
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
     markup.add(types.KeyboardButton(
         text="🛍️ Do'konni ochish",
@@ -60,6 +164,12 @@ def web_app_data_handler(message):
         save_stats(stats, "Yangi buyurtma statistikasi")
     except Exception as e:
         print("Statistika yangilanmadi:", e)
+
+    # Keshbek + referal
+    try:
+        process_order_cashback(message.from_user.id, order)
+    except Exception as e:
+        print("Keshbek yangilanmadi:", e)
 
 
 print("Savdo boti ishga tushdi...")
