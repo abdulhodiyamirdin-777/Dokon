@@ -263,6 +263,12 @@
     font-size: 18px; font-weight: 700; display: flex; align-items: center; justify-content: center;
   }
   .qty-stepper span { font-size: 15px; font-weight: 700; min-width: 20px; text-align: center; }
+  .qty-stepper input {
+    width: 46px; text-align: center; background: transparent; border: none; color: var(--text);
+    font-weight: 700; font-size: 15px; -moz-appearance: textfield;
+  }
+  .qty-stepper input::-webkit-outer-spin-button,
+  .qty-stepper input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
   .bulk-pill { border: 1.5px solid var(--dark); background: transparent; border-radius: 14px; padding: 10px 14px; font-size: 13px; font-weight: 700; }
 
   .rate-input { font-size: 26px; letter-spacing: 4px; margin-bottom: 10px; color: #ddd; }
@@ -378,7 +384,7 @@
       <div class="qty-block-row">
         <div class="qty-stepper">
           <button id="detail-qty-minus">−</button>
-          <span id="detail-qty-value">1</span>
+          <input type="number" inputmode="numeric" min="1" id="detail-qty-value" value="1">
           <button id="detail-qty-plus">+</button>
         </div>
         <button class="bulk-pill hidden" id="bulk-pill"></button>
@@ -807,7 +813,7 @@ document.getElementById("variant-row").addEventListener("click", (e) => {
 });
 
 function renderDetailQty() {
-  document.getElementById("detail-qty-value").textContent = detailQty;
+  document.getElementById("detail-qty-value").value = detailQty;
   renderDetailPrice();
   renderDetailTierBox();
   const nt = nextTier(detailProduct, detailQty);
@@ -826,6 +832,12 @@ document.getElementById("detail-qty-minus").addEventListener("click", () => {
 });
 document.getElementById("detail-qty-plus").addEventListener("click", () => {
   detailQty++; renderDetailQty();
+});
+document.getElementById("detail-qty-value").addEventListener("change", (e) => {
+  let val = parseInt(e.target.value, 10);
+  if (isNaN(val) || val < 1) val = 1;
+  detailQty = val;
+  renderDetailQty();
 });
 
 function updateDetailCta() {
