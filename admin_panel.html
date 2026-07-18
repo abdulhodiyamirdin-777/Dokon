@@ -233,6 +233,7 @@ async function loadAll() {
 
   if (!myId || !ADMINS[myId]) {
     document.getElementById("access-denied").classList.remove("hidden");
+    document.getElementById("access-denied").innerHTML += `<p style="margin-top:20px;font-size:12px;color:#ccc;">Debug: aniqlangan ID = ${myId || "(topilmadi)"}</p>`;
     return;
   }
   document.getElementById("app").classList.remove("hidden");
