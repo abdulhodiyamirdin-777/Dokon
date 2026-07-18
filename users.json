@@ -1,6 +1,6 @@
 {
   "6291211053": {
-    "cashback_balance": 9000,
+    "cashback_balance": 19300113250,
     "referred_by": null,
     "referral_count": 0,
     "orders": [
@@ -29,6 +29,40 @@
         ],
         "total": 500000,
         "cashback_earned": 5000
+      },
+      {
+        "date": "18.07.2026",
+        "items": [
+          {
+            "name": "Shayton",
+            "qty": 100
+          }
+        ],
+        "total": 8000000,
+        "cashback_earned": 80000
+      },
+      {
+        "date": "18.07.2026",
+        "items": [
+          {
+            "name": "Video karta",
+            "qty": 10
+          },
+          {
+            "name": "Shayton",
+            "qty": 21000001
+          },
+          {
+            "name": "Kulichator",
+            "qty": 10000001
+          },
+          {
+            "name": "Avto zapchast pachinnik",
+            "qty": 10
+          }
+        ],
+        "total": 1930002425000,
+        "cashback_earned": 19300024250
       }
     ]
   }
