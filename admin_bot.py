@@ -1,143 +1,218 @@
 import telebot
 from telebot import types
-from github_helper import get_products, save_products, get_stats
+import json
+import os
+import base64
+import requests
 
 # ---- Sozlamalar ----
-ADMIN_BOT_TOKEN = "8305630868:AAGHrpBH6BMFZkjpDhZR0TMUPVBz_JqvamI"
-ADMIN_CHAT_ID = 8881459774                       # Faqat shu odam boshqara oladi
+ADMIN_BOT_TOKEN = os.environ.get("ADMIN_BOT_TOKEN", "")
+ADMIN_PANEL_URL = "https://abdulhodiyamirdin-777.github.io/Dokon/admin_panel.html"
+OWNER_ID = "8881459774"  # bosh admin
+
+GITHUB_REPO = "abdulhodiyamirdin-777/Dokon"
+GITHUB_TOKEN = os.environ.get("GITHUB_TOKEN", "")
 
 bot = telebot.TeleBot(ADMIN_BOT_TOKEN)
 
 
-def is_admin(message):
-    return message.chat.id == ADMIN_CHAT_ID
+# ==============================================================
+# GitHub bilan ishlash (mustaqil, boshqa fayllarga bog'liq emas)
+# ==============================================================
 
+def _api_url(filename):
+    return f"https://api.github.com/repos/{GITHUB_REPO}/contents/{filename}"
+
+
+def gh_read(filename, default):
+    try:
+        r = requests.get(_api_url(filename), headers={"Authorization": f"token {GITHUB_TOKEN}"})
+        r.raise_for_status()
+        content = base64.b64decode(r.json()["content"]).decode("utf-8")
+        return json.loads(content)
+    except Exception as e:
+        print(f"{filename} o'qilmadi:", e)
+        return default
+
+
+def gh_write(filename, data, commit_message):
+    try:
+        r = requests.get(_api_url(filename), headers={"Authorization": f"token {GITHUB_TOKEN}"})
+        sha = r.json().get("sha") if r.status_code == 200 else None
+        payload = {
+            "message": commit_message,
+            "content": base64.b64encode(
+                json.dumps(data, ensure_ascii=False, indent=2).encode("utf-8")
+            ).decode("utf-8"),
+        }
+        if sha:
+            payload["sha"] = sha
+        requests.put(_api_url(filename), headers={"Authorization": f"token {GITHUB_TOKEN}"}, json=payload)
+        return True
+    except Exception as e:
+        print(f"{filename} yozilmadi:", e)
+        return False
+
+
+# ==============================================================
+# Admin tekshiruvi
+# ==============================================================
+
+def is_admin(user_id):
+    admins = gh_read("admins.json", {})
+    return str(user_id) in admins
+
+
+def ensure_owner_seeded():
+    """Birinchi ishga tushganda, agar admins.json bo'sh bo'lsa, bosh adminni qo'shadi."""
+    admins = gh_read("admins.json", {})
+    if OWNER_ID not in admins:
+        admins[OWNER_ID] = {"role": "Bosh admin", "owner": True}
+        gh_write("admins.json", admins, "Bosh admin qoshildi")
+
+
+# ==============================================================
+# Handlerlar
+# ==============================================================
 
 @bot.message_handler(commands=["start"])
 def start_handler(message):
-    if not is_admin(message):
-        bot.send_message(message.chat.id, "Sizda ruxsat yo'q.")
+    user_id = str(message.from_user.id)
+    ensure_owner_seeded()
+
+    if not is_admin(user_id):
+        bot.send_message(message.chat.id, "🔒 Bu bot faqat adminlar uchun.")
         return
-    bot.send_message(
-        message.chat.id,
-        "👋 Admin panelga xush kelibsiz!\n\n"
-        "Buyruqlar:\n"
-        "/royxat — mahsulotlar ro'yxati\n"
-        "/narx [ID] [yangi_narx] — narxni o'zgartirish\n"
-        "/qoshish [Nomi] | [Narx] | [Kategoriya] | [rasm.jpg] — yangi mahsulot\n"
-        "/ochirish [ID] — mahsulotni o'chirish\n"
-        "/statistika — buyurtmalar statistikasi"
-    )
+
+    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    markup.add(types.KeyboardButton(
+        text="⚙️ Panelni ochish",
+        web_app=types.WebAppInfo(url=ADMIN_PANEL_URL)
+    ))
+    bot.send_message(message.chat.id, "Admin panelga xush kelibsiz 👇", reply_markup=markup)
 
 
-@bot.message_handler(commands=["royxat"])
-def list_handler(message):
-    if not is_admin(message):
+@bot.message_handler(content_types=["web_app_data"])
+def web_app_data_handler(message):
+    user_id = str(message.from_user.id)
+    if not is_admin(user_id):
+        bot.send_message(message.chat.id, "🔒 Sizda ruxsat yo'q.")
         return
-    products = get_products()
-    if not products:
-        bot.send_message(message.chat.id, "Mahsulotlar topilmadi.")
-        return
-    lines = []
-    for p in products:
-        lines.append(f"#{p['id']} — {p['name']} — {p['price']:,} so'm — {p.get('cat','')}")
-    bot.send_message(message.chat.id, "\n".join(lines))
 
-
-@bot.message_handler(commands=["narx"])
-def price_handler(message):
-    if not is_admin(message):
-        return
     try:
-        parts = message.text.split()
-        pid = int(parts[1])
-        new_price = int(parts[2])
-    except (IndexError, ValueError):
-        bot.send_message(message.chat.id, "Foydalanish: /narx [ID] [yangi_narx]\nMisol: /narx 1 95000")
-        return
-
-    products = get_products()
-    found = False
-    for p in products:
-        if p["id"] == pid:
-            p["price"] = new_price
-            found = True
-            break
-
-    if not found:
-        bot.send_message(message.chat.id, f"#{pid} raqamli mahsulot topilmadi.")
-        return
-
-    ok = save_products(products, f"Narx yangilandi: #{pid}")
-    if ok:
-        bot.send_message(message.chat.id, f"✅ #{pid} narxi {new_price:,} so'mga o'zgartirildi.")
-    else:
-        bot.send_message(message.chat.id, "❌ Xatolik: GitHub'ga yozib bo'lmadi. Tokenni tekshiring.")
-
-
-@bot.message_handler(commands=["qoshish"])
-def add_handler(message):
-    if not is_admin(message):
-        return
-    try:
-        text = message.text.split(" ", 1)[1]
-        name, price, cat, image = [x.strip() for x in text.split("|")]
-        price = int(price)
+        data = json.loads(message.web_app_data.data)
     except Exception:
-        bot.send_message(
-            message.chat.id,
-            "Foydalanish:\n/qoshish Nomi | Narx | Kategoriya | rasm.jpg\n\n"
-            "Misol:\n/qoshish Simsiz sichqoncha | 45000 | Gadjetlar | sichqoncha.jpg"
-        )
+        bot.send_message(message.chat.id, "Xatolik yuz berdi.")
         return
 
-    products = get_products()
-    new_id = max([p["id"] for p in products], default=0) + 1
-    products.append({"id": new_id, "name": name, "price": price, "cat": cat, "image": image})
+    action = data.get("type")
+    ok = False
 
-    ok = save_products(products, f"Yangi mahsulot qo'shildi: {name}")
-    if ok:
-        bot.send_message(message.chat.id, f"✅ '{name}' #{new_id} raqami bilan qo'shildi.")
-    else:
-        bot.send_message(message.chat.id, "❌ Xatolik yuz berdi.")
+    if action == "edit_price":
+        ok = handle_edit_price(data)
+    elif action == "toggle_active":
+        ok = handle_toggle_active(data)
+    elif action == "delete_product":
+        ok = handle_delete_product(data)
+    elif action == "add_product":
+        ok = handle_add_product(data)
+    elif action == "order_status":
+        ok = handle_order_status(data)
+    elif action == "delete_review":
+        ok = handle_delete_review(data)
+    elif action == "add_admin":
+        ok = handle_add_admin(data, user_id)
+    elif action == "remove_admin":
+        ok = handle_remove_admin(data)
 
-
-@bot.message_handler(commands=["ochirish"])
-def delete_handler(message):
-    if not is_admin(message):
-        return
-    try:
-        pid = int(message.text.split()[1])
-    except (IndexError, ValueError):
-        bot.send_message(message.chat.id, "Foydalanish: /ochirish [ID]")
-        return
-
-    products = get_products()
-    new_products = [p for p in products if p["id"] != pid]
-
-    if len(new_products) == len(products):
-        bot.send_message(message.chat.id, f"#{pid} raqamli mahsulot topilmadi.")
-        return
-
-    ok = save_products(new_products, f"Mahsulot o'chirildi: #{pid}")
-    if ok:
-        bot.send_message(message.chat.id, f"✅ #{pid} o'chirildi.")
-    else:
-        bot.send_message(message.chat.id, "❌ Xatolik yuz berdi.")
+    bot.send_message(message.chat.id, "✅ Bajarildi" if ok else "❌ Xatolik yuz berdi, qaytadan urinib ko'ring.")
 
 
-@bot.message_handler(commands=["statistika"])
-def stats_handler(message):
-    if not is_admin(message):
-        return
-    stats = get_stats()
-    bot.send_message(
-        message.chat.id,
-        f"📊 <b>Statistika</b>\n\n"
-        f"🧾 Buyurtmalar soni: {stats.get('orders', 0)}\n"
-        f"💰 Umumiy tushum: {stats.get('revenue', 0):,} so'm",
-        parse_mode="HTML"
-    )
+# ---- Mahsulotlar ----
+
+def handle_edit_price(data):
+    products = gh_read("products.json", [])
+    pid = str(data.get("product_id"))
+    for p in products:
+        if str(p["id"]) == pid:
+            p["price"] = data.get("price")
+            if p.get("tiers"):
+                p["tiers"][0]["price"] = data.get("price")
+    return gh_write("products.json", products, f"Narx yangilandi: {pid}")
+
+
+def handle_toggle_active(data):
+    products = gh_read("products.json", [])
+    pid = str(data.get("product_id"))
+    for p in products:
+        if str(p["id"]) == pid:
+            p["active"] = data.get("active", True)
+    return gh_write("products.json", products, f"Faollik holati: {pid}")
+
+
+def handle_delete_product(data):
+    products = gh_read("products.json", [])
+    pid = str(data.get("product_id"))
+    products = [p for p in products if str(p["id"]) != pid]
+    return gh_write("products.json", products, f"Mahsulot ochirildi: {pid}")
+
+
+def handle_add_product(data):
+    products = gh_read("products.json", [])
+    next_id = max([int(p["id"]) for p in products], default=0) + 1
+    new_product = {
+        "id": next_id,
+        "name": data.get("name", ""),
+        "price": data.get("price", 0),
+        "cat": data.get("cat", ""),
+        "image": data.get("image", ""),
+        "active": True,
+    }
+    if data.get("tiers"):
+        new_product["tiers"] = data["tiers"]
+    products.append(new_product)
+    return gh_write("products.json", products, f"Yangi mahsulot: {new_product['name']}")
+
+
+# ---- Buyurtmalar ----
+
+def handle_order_status(data):
+    orders = gh_read("orders.json", {})
+    oid = str(data.get("order_id"))
+    if oid in orders:
+        orders[oid]["status"] = data.get("status", "Yangi")
+        return gh_write("orders.json", orders, f"Buyurtma holati: #{oid} -> {data.get('status')}")
+    return False
+
+
+# ---- Sharhlar ----
+
+def handle_delete_review(data):
+    reviews = gh_read("reviews.json", {})
+    pid = str(data.get("product_id"))
+    idx = data.get("index")
+    if pid in reviews and idx is not None and 0 <= idx < len(reviews[pid]):
+        reviews[pid].pop(idx)
+        return gh_write("reviews.json", reviews, f"Sharh ochirildi: mahsulot {pid}")
+    return False
+
+
+# ---- Adminlar ----
+
+def handle_add_admin(data, requester_id):
+    admins = gh_read("admins.json", {})
+    new_id = str(data.get("admin_id"))
+    admins[new_id] = {"role": data.get("role", "Admin"), "owner": False}
+    return gh_write("admins.json", admins, f"Yangi admin: {new_id}")
+
+
+def handle_remove_admin(data):
+    admins = gh_read("admins.json", {})
+    rid = str(data.get("admin_id"))
+    if rid in admins and not admins[rid].get("owner"):
+        del admins[rid]
+        return gh_write("admins.json", admins, f"Admin ochirildi: {rid}")
+    return False
 
 
 print("Admin bot ishga tushdi...")

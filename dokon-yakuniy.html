@@ -669,10 +669,12 @@ async function loadProducts() {
   try {
     const res = await fetch(GITHUB_BASE + "products.json?t=" + Date.now());
     const data = await res.json();
-    PRODUCTS = data.map(p => ({
-      ...p,
-      image: p.image ? GITHUB_BASE + p.image : ""
-    }));
+    PRODUCTS = data
+      .filter(p => p.active !== false)
+      .map(p => ({
+        ...p,
+        image: p.image ? GITHUB_BASE + p.image : ""
+      }));
     const cats = [...new Set(PRODUCTS.map(p => p.cat))];
     CATEGORIES = ["Hammasi", ...cats];
   } catch (e) {

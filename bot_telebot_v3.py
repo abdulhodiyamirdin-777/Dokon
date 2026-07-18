@@ -81,6 +81,56 @@ def register_referral(new_user_id, referrer_id):
     save_users(users, f"Referal: {referrer_id} <- {new_user_id}")
 
 
+def _orders_api_url():
+    return f"https://api.github.com/repos/{GITHUB_REPO}/contents/orders.json"
+
+
+def get_orders():
+    try:
+        r = requests.get(_orders_api_url(), headers={"Authorization": f"token {GITHUB_TOKEN}"})
+        r.raise_for_status()
+        content = base64.b64decode(r.json()["content"]).decode("utf-8")
+        return json.loads(content)
+    except Exception as e:
+        print("orders.json o'qilmadi:", e)
+        return {}
+
+
+def save_orders(orders, commit_message):
+    try:
+        r = requests.get(_orders_api_url(), headers={"Authorization": f"token {GITHUB_TOKEN}"})
+        sha = r.json().get("sha") if r.status_code == 200 else None
+        payload = {
+            "message": commit_message,
+            "content": base64.b64encode(
+                json.dumps(orders, ensure_ascii=False, indent=2).encode("utf-8")
+            ).decode("utf-8"),
+        }
+        if sha:
+            payload["sha"] = sha
+        requests.put(_orders_api_url(), headers={"Authorization": f"token {GITHUB_TOKEN}"}, json=payload)
+    except Exception as e:
+        print("orders.json yozilmadi:", e)
+
+
+def record_order(user_id, order):
+    """Admin panelda ko'rinishi uchun har bir buyurtmani alohida saqlaydi."""
+    orders = get_orders()
+    next_id = max([int(k) for k in orders.keys()], default=10000) + 1
+    orders[str(next_id)] = {
+        "customer": order.get("name", ""),
+        "phone": order.get("phone", ""),
+        "address": order.get("address", ""),
+        "items": order.get("items", []),
+        "total": order.get("total", 0),
+        "status": "Yangi",
+        "date": datetime.now().strftime("%Y-%m-%d %H:%M"),
+        "user_id": str(user_id),
+    }
+    save_orders(orders, f"Yangi buyurtma #{next_id}")
+    return next_id
+
+
 def process_order_cashback(user_id, order):
     user_id = str(user_id)
     total = order.get("total", 0)
@@ -213,6 +263,12 @@ def web_app_data_handler(message):
     lines.append(f"📍 <b>Manzil:</b> {order.get('address')}")
 
     order_text = "\n".join(lines)
+
+    try:
+        order_id = record_order(message.from_user.id, order)
+        order_text = f"🆕 <b>Yangi buyurtma #{order_id}</b>\n" + order_text.split("\n", 1)[1]
+    except Exception as e:
+        print("Buyurtma saqlanmadi:", e)
 
     bot.send_message(ADMIN_CHAT_ID, order_text, parse_mode="HTML")
     bot.send_message(
