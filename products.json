@@ -1,16 +1,69 @@
 [
-  { "id": 1, "name": "Video karta", "price": 100000, "image": "IMG_20260711_071756_495.jpg", "cat": "Elektronika",
+  {
+    "id": 1,
+    "name": "Video karta",
+    "price": 100000,
+    "image": "IMG_20260711_071756_495.jpg",
+    "cat": "Elektronika",
     "tiers": [
-      { "min_qty": 1, "price": 100000 },
-      { "min_qty": 10, "price": 92000 }
+      {
+        "min_qty": 1,
+        "price": 100000
+      },
+      {
+        "min_qty": 10,
+        "price": 92000
+      }
+    ],
+    "active": false
+  },
+  {
+    "id": 2,
+    "name": "Shayton",
+    "price": 80000,
+    "image": "IMG_20260711_071756_481.jpg",
+    "cat": "Elektronika"
+  },
+  {
+    "id": 3,
+    "name": "Kulichator",
+    "price": 25000,
+    "image": "IMG_20260711_071755_751.jpg",
+    "cat": "Elektronika"
+  },
+  {
+    "id": 4,
+    "name": "Avto zapchast pachinnik",
+    "price": 1000,
+    "image": "IMG_20260711_071756_876.jpg",
+    "cat": "Avto ehtiyot qismlari",
+    "tiers": [
+      {
+        "min_qty": 1,
+        "price": 1000
+      },
+      {
+        "min_qty": 10,
+        "price": 140000
+      }
     ]
   },
-  { "id": 2, "name": "Shayton", "price": 80000, "image": "IMG_20260711_071756_481.jpg", "cat": "Elektronika" },
-  { "id": 3, "name": "Kulichator", "price": 25000, "image": "IMG_20260711_071755_751.jpg", "cat": "Elektronika" },
-  { "id": 4, "name": "Avto zapchast pachinnik", "price": 150000, "image": "IMG_20260711_071756_876.jpg", "cat": "Avto ehtiyot qismlari",
+  {
+    "id": 5,
+    "name": "Sim",
+    "price": 15000,
+    "cat": "Usb",
+    "image": "Sim.jpg",
+    "active": true,
     "tiers": [
-      { "min_qty": 1, "price": 150000 },
-      { "min_qty": 10, "price": 140000 }
+      {
+        "min_qty": 1,
+        "price": 15000
+      },
+      {
+        "min_qty": 100,
+        "price": 100
+      }
     ]
   }
 ]
