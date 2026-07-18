@@ -4,6 +4,7 @@ import json
 import os
 import base64
 import requests
+import time
 
 # ---- Sozlamalar ----
 ADMIN_BOT_TOKEN = os.environ.get("ADMIN_BOT_TOKEN", "")
@@ -33,6 +34,27 @@ def gh_read(filename, default):
     except Exception as e:
         print(f"{filename} o'qilmadi:", e)
         return default
+
+
+def gh_write_binary(filename, raw_bytes, commit_message):
+    try:
+        r = requests.get(_api_url(filename), headers={"Authorization": f"token {GITHUB_TOKEN}"})
+        sha = r.json().get("sha") if r.status_code == 200 else None
+        payload = {
+            "message": commit_message,
+            "content": base64.b64encode(raw_bytes).decode("utf-8"),
+        }
+        if sha:
+            payload["sha"] = sha
+        resp = requests.put(_api_url(filename), headers={"Authorization": f"token {GITHUB_TOKEN}"}, json=payload)
+        return resp.status_code in (200, 201)
+    except Exception as e:
+        print(f"{filename} yozilmadi:", e)
+        return False
+
+
+# Har bir adminning "hozir qaysi mahsulot uchun rasm kutilyapti" holati (xotirada saqlanadi)
+PENDING_IMAGE = {}
 
 
 def gh_write(filename, data, commit_message):
@@ -106,16 +128,32 @@ def web_app_data_handler(message):
         return
 
     action = data.get("type")
-    ok = False
 
+    if action == "add_product":
+        new_id = handle_add_product(data)
+        if new_id:
+            PENDING_IMAGE[user_id] = new_id
+            bot.send_message(
+                message.chat.id,
+                f"✅ \"{data.get('name', '')}\" qo'shildi.\n📷 Endi shu mahsulot uchun rasmni shu botga yuboring (pastdagi rasm belgisidan tanlang)."
+            )
+        else:
+            bot.send_message(message.chat.id, "❌ Xatolik yuz berdi, qaytadan urinib ko'ring.")
+        return
+
+    if action == "set_pending_image":
+        pid = str(data.get("product_id"))
+        PENDING_IMAGE[user_id] = pid
+        bot.send_message(message.chat.id, "📷 Yangi rasmni shu botga yuboring.")
+        return
+
+    ok = False
     if action == "edit_price":
         ok = handle_edit_price(data)
     elif action == "toggle_active":
         ok = handle_toggle_active(data)
     elif action == "delete_product":
         ok = handle_delete_product(data)
-    elif action == "add_product":
-        ok = handle_add_product(data)
     elif action == "order_status":
         ok = handle_order_status(data)
     elif action == "delete_review":
@@ -126,6 +164,37 @@ def web_app_data_handler(message):
         ok = handle_remove_admin(data)
 
     bot.send_message(message.chat.id, "✅ Bajarildi" if ok else "❌ Xatolik yuz berdi, qaytadan urinib ko'ring.")
+
+
+@bot.message_handler(content_types=["photo"])
+def photo_handler(message):
+    user_id = str(message.from_user.id)
+    if not is_admin(user_id):
+        return
+
+    pid = PENDING_IMAGE.get(user_id)
+    if not pid:
+        bot.send_message(message.chat.id, "Hozircha rasm kutilmayapti. Avval panelda mahsulot qo'shing yoki 🖼️ tugmasini bosing.")
+        return
+
+    try:
+        file_info = bot.get_file(message.photo[-1].file_id)
+        image_bytes = bot.download_file(file_info.file_path)
+        filename = f"product_{pid}_{int(time.time())}.jpg"
+
+        if gh_write_binary(filename, image_bytes, f"Mahsulot rasmi: {pid}"):
+            products = gh_read("products.json", [])
+            for p in products:
+                if str(p["id"]) == pid:
+                    p["image"] = filename
+            gh_write("products.json", products, f"Rasm bog'landi: {pid}")
+            del PENDING_IMAGE[user_id]
+            bot.send_message(message.chat.id, "✅ Rasm muvaffaqiyatli qo'shildi!")
+        else:
+            bot.send_message(message.chat.id, "❌ Rasmni yuklashda xatolik.")
+    except Exception as e:
+        print("Rasm yuklashda xatolik:", e)
+        bot.send_message(message.chat.id, "❌ Xatolik yuz berdi.")
 
 
 # ---- Mahsulotlar ----
@@ -165,13 +234,15 @@ def handle_add_product(data):
         "name": data.get("name", ""),
         "price": data.get("price", 0),
         "cat": data.get("cat", ""),
-        "image": data.get("image", ""),
+        "image": "",
         "active": True,
     }
     if data.get("tiers"):
         new_product["tiers"] = data["tiers"]
     products.append(new_product)
-    return gh_write("products.json", products, f"Yangi mahsulot: {new_product['name']}")
+    if gh_write("products.json", products, f"Yangi mahsulot: {new_product['name']}"):
+        return next_id
+    return None
 
 
 # ---- Buyurtmalar ----

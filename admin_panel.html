@@ -193,10 +193,9 @@
     <input id="np-price" inputmode="numeric" placeholder="Masalan: 80000">
     <label>Kategoriya</label>
     <input id="np-cat" placeholder="Masalan: Elektronika">
-    <label>Rasm fayl nomi (GitHub'ga alohida yuklaysiz)</label>
-    <input id="np-image" placeholder="Masalan: mahsulot1.jpg">
     <label>Optom narx — 100+ dona uchun (ixtiyoriy)</label>
     <input id="np-optom-price" inputmode="numeric" placeholder="Bo'sh qoldirsangiz — optom narx bo'lmaydi">
+    <p style="font-size:12.5px;color:var(--hint);margin:10px 0 0;">📷 Qo'shgandan keyin bot sizdan rasmni so'raydi — to'g'ridan-to'g'ri botga yuborasiz.</p>
     <button class="save-btn" id="save-new-product">Qo'shish</button>
     <button class="cancel-btn" id="cancel-new-product">Bekor qilish</button>
   </div>
@@ -259,6 +258,7 @@ function renderProducts() {
         <p class="pmeta">${p.cat || ""} · <input class="price-edit" type="number" inputmode="numeric" value="${p.price}" data-price-id="${p.id}"> so'm</p>
       </div>
       <div class="actions">
+        <button data-img-id="${p.id}" title="Rasmni almashtirish">🖼️</button>
         <button class="dot ${p.active === false ? 'off' : 'on'}" data-toggle-id="${p.id}" title="Faol/nofaol"></button>
         <button data-del-id="${p.id}">🗑️</button>
       </div>
@@ -277,6 +277,10 @@ document.getElementById("products-list").addEventListener("change", (e) => {
 document.getElementById("products-list").addEventListener("click", (e) => {
   const toggleId = e.target.getAttribute("data-toggle-id");
   const delId = e.target.getAttribute("data-del-id");
+  const imgId = e.target.getAttribute("data-img-id");
+  if (imgId) {
+    tg.sendData(JSON.stringify({ type: "set_pending_image", product_id: imgId }));
+  }
   if (toggleId) {
     const p = PRODUCTS.find(p => String(p.id) === toggleId);
     const nowActive = !(p.active === false);
@@ -299,12 +303,11 @@ document.getElementById("save-new-product").addEventListener("click", () => {
   const name = document.getElementById("np-name").value.trim();
   const price = parseInt(document.getElementById("np-price").value, 10);
   const cat = document.getElementById("np-cat").value.trim();
-  const image = document.getElementById("np-image").value.trim();
   const optomPrice = parseInt(document.getElementById("np-optom-price").value, 10);
 
   if (!name || !price) { tg.showAlert("Nomi va narxi to'ldirilishi shart"); return; }
 
-  const payload = { type: "add_product", name, price, cat, image };
+  const payload = { type: "add_product", name, price, cat };
   if (!isNaN(optomPrice) && optomPrice > 0) {
     payload.tiers = [{ min_qty: 1, price: price }, { min_qty: 100, price: optomPrice }];
   }
