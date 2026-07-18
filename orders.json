@@ -1,1 +1,18 @@
-{}
+{
+  "10001": {
+    "customer": "Y",
+    "phone": "6",
+    "address": "T",
+    "items": [
+      {
+        "name": "Shayton",
+        "qty": 801,
+        "price": 80000
+      }
+    ],
+    "total": 64080000,
+    "status": "Yangi",
+    "date": "2026-07-18 12:33",
+    "user_id": "8881459774"
+  }
+}
