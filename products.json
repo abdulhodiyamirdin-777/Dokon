@@ -47,5 +47,23 @@
         "price": 140000
       }
     ]
+  },
+  {
+    "id": 5,
+    "name": "Sim",
+    "price": 15000,
+    "cat": "Usb",
+    "image": "Sim.jpg",
+    "active": true,
+    "tiers": [
+      {
+        "min_qty": 1,
+        "price": 15000
+      },
+      {
+        "min_qty": 100,
+        "price": 100
+      }
+    ]
   }
 ]
