@@ -34,13 +34,13 @@
   {
     "id": 4,
     "name": "Avto zapchast pachinnik",
-    "price": 150000,
+    "price": 1000,
     "image": "IMG_20260711_071756_876.jpg",
     "cat": "Avto ehtiyot qismlari",
     "tiers": [
       {
         "min_qty": 1,
-        "price": 150000
+        "price": 1000
       },
       {
         "min_qty": 10,
