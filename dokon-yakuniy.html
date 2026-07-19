@@ -291,7 +291,7 @@
     <div class="shop-logo" id="shop-logo">DO'KON</div>
     <div class="shop-info">
       <h1 id="shop-name">Mening Do'konim</h1>
-      <p id="shop-sub">Optom va chakana · Toshkent</p>
+      <p id="shop-sub">Optom va chakana · Andijon</p>
     </div>
     <div class="cart-fab" id="cart-fab-btn">
       🛒
@@ -307,8 +307,8 @@
 
   <div class="location-bar">
     <div class="pin">📍</div>
-    <div class="addr">Toshkent shahar<br>Chilonzor tumani</div>
-    <button class="go-btn">➤ Xaritada</button>
+    <div class="addr">Jaxon bozori<br>Andijon shahar</div>
+    <button class="go-btn" id="map-btn">➤ Xaritada</button>
   </div>
 
   <div class="categories" id="cat-bar"></div>
@@ -429,8 +429,9 @@ tg.expand();
    DO'KON SOZLAMALARI
    ============================================================ */
 const SHOP_NAME = "Mening Do'konim";
-const SHOP_SUB = "Optom va chakana · Toshkent";
+const SHOP_SUB = "Optom va chakana · Andijon";
 const SHOP_LOGO_URL = "";
+const SHOP_MAP_URL = "https://maps.google.com/?q=40.7680,72.3450";
 
 const GITHUB_BASE = "https://raw.githubusercontent.com/abdulhodiyamirdin-777/Dokon/main/";
 const BOT_USERNAME = "Abdulhodiy777bot";
@@ -578,6 +579,10 @@ document.querySelectorAll(".nav-item").forEach(item => {
 
 document.getElementById("cart-fab-btn").addEventListener("click", () => {
   document.querySelector('.nav-item[data-tab="cart"]').click();
+});
+
+document.getElementById("map-btn").addEventListener("click", () => {
+  tg.openLink(SHOP_MAP_URL);
 });
 
 function renderCart() {
