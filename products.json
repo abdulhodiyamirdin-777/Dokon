@@ -15,7 +15,7 @@
         "price": 92000
       }
     ],
-    "active": false
+    "active": true
   },
   {
     "id": 2,
@@ -83,5 +83,24 @@
         "price": 100
       }
     ]
+  },
+  {
+    "id": 7,
+    "name": "Temir",
+    "price": 10000,
+    "cat": "Temir tersak",
+    "image": "",
+    "active": true,
+    "tiers": [
+      {
+        "min_qty": 1,
+        "price": 10000
+      },
+      {
+        "min_qty": 100,
+        "price": 9500
+      }
+    ],
+    "stock": 10000
   }
 ]
