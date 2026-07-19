@@ -120,6 +120,20 @@
   #modal-sheet .cancel-btn {
     width: 100%; background: none; color: var(--hint); border: none; padding: 10px; font-size: 13.5px; margin-top: 6px;
   }
+  #modal-sheet select {
+    width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #eee; background: var(--bg);
+    font-size: 14px; font-family: inherit; color: var(--text);
+  }
+  .two-col { display: flex; gap: 10px; }
+  .two-col > div { flex: 1; }
+  .image-tile {
+    width: 72px; height: 72px; border-radius: 14px; border: 1.5px dashed #ddb9c4; background: var(--bg);
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; margin-bottom: 4px;
+  }
+  .image-tile-icon { font-size: 22px; }
+  .image-tile-hint { font-size: 9.5px; color: var(--hint); text-align: center; width: 90px; line-height: 1.2; }
+  .stock-out { font-size: 10px; font-weight: 700; color: var(--bad); background: #fde8ec; padding: 2px 7px; border-radius: 10px; margin-left: 6px; }
+  .stock-edit { width: 56px; }
 
   #access-denied { padding: 60px 24px; text-align: center; }
   #access-denied h2 { font-size: 18px; margin-bottom: 8px; }
@@ -187,15 +201,40 @@
 <div id="modal-overlay" class="hidden">
   <div id="modal-sheet">
     <h2>Yangi mahsulot</h2>
+
+    <label>Rasm</label>
+    <div class="image-tile">
+      <span class="image-tile-icon">📷</span>
+      <span class="image-tile-hint">Qo'shgandan keyin bot so'raydi</span>
+    </div>
+
     <label>Nomi</label>
     <input id="np-name" placeholder="Masalan: Samsung 35w">
-    <label>Narxi (so'm)</label>
-    <input id="np-price" inputmode="numeric" placeholder="Masalan: 80000">
+
+    <div class="two-col">
+      <div>
+        <label>Dona narxi (so'm)</label>
+        <input id="np-price" inputmode="numeric" placeholder="Masalan: 80000">
+      </div>
+      <div>
+        <label>Optom narxi</label>
+        <input id="np-optom-price" inputmode="numeric" placeholder="Ixtiyoriy">
+      </div>
+    </div>
+
+    <label>Optom necha donadan? (bo'sh — optom yo'q)</label>
+    <input id="np-optom-min" inputmode="numeric" placeholder="Masalan: 10">
+
+    <label>Qoldiq (ombordagi soni)</label>
+    <input id="np-stock" inputmode="numeric" placeholder="Bo'sh = cheksiz">
+
     <label>Kategoriya</label>
-    <input id="np-cat" placeholder="Masalan: Elektronika">
-    <label>Optom narx — 100+ dona uchun (ixtiyoriy)</label>
-    <input id="np-optom-price" inputmode="numeric" placeholder="Bo'sh qoldirsangiz — optom narx bo'lmaydi">
-    <p style="font-size:12.5px;color:var(--hint);margin:10px 0 0;">📷 Qo'shgandan keyin bot sizdan rasmni so'raydi — to'g'ridan-to'g'ri botga yuborasiz.</p>
+    <select id="np-cat-select">
+      <option value="">— tanlang —</option>
+      <option value="__new__">+ Yangi kategoriya</option>
+    </select>
+    <input id="np-cat-new" placeholder="Yangi kategoriya nomi" style="margin-top:8px;display:none;">
+
     <button class="save-btn" id="save-new-product">Qo'shish</button>
     <button class="cancel-btn" id="cancel-new-product">Bekor qilish</button>
   </div>
@@ -254,8 +293,9 @@ function renderProducts() {
     <div class="card">
       ${p.image ? `<img class="thumb" src="${GITHUB_BASE + p.image}">` : `<div class="thumb-fallback">${p.emoji || "📦"}</div>`}
       <div class="info">
-        <p class="pname">${p.name}</p>
+        <p class="pname">${p.name}${p.stock === 0 ? '<span class="stock-out">Tugadi</span>' : ''}</p>
         <p class="pmeta">${p.cat || ""} · <input class="price-edit" type="number" inputmode="numeric" value="${p.price}" data-price-id="${p.id}"> so'm</p>
+        <p class="pmeta">Qoldiq: <input class="price-edit stock-edit" type="number" inputmode="numeric" value="${p.stock ?? ''}" placeholder="cheksiz" data-stock-id="${p.id}"></p>
       </div>
       <div class="actions">
         <button data-img-id="${p.id}" title="Rasmni almashtirish">🖼️</button>
@@ -267,11 +307,19 @@ function renderProducts() {
 }
 
 document.getElementById("products-list").addEventListener("change", (e) => {
-  const id = e.target.getAttribute("data-price-id");
-  if (!id) return;
-  const newPrice = parseInt(e.target.value, 10);
-  if (isNaN(newPrice) || newPrice <= 0) return;
-  tg.sendData(JSON.stringify({ type: "edit_price", product_id: id, price: newPrice }));
+  const priceId = e.target.getAttribute("data-price-id");
+  const stockId = e.target.getAttribute("data-stock-id");
+  if (priceId) {
+    const newPrice = parseInt(e.target.value, 10);
+    if (isNaN(newPrice) || newPrice <= 0) return;
+    tg.sendData(JSON.stringify({ type: "edit_price", product_id: priceId, price: newPrice }));
+  }
+  if (stockId) {
+    const val = e.target.value.trim();
+    const stock = val === "" ? null : parseInt(val, 10);
+    if (val !== "" && isNaN(stock)) return;
+    tg.sendData(JSON.stringify({ type: "edit_stock", product_id: stockId, stock }));
+  }
 });
 
 document.getElementById("products-list").addEventListener("click", (e) => {
@@ -294,7 +342,17 @@ document.getElementById("products-list").addEventListener("click", (e) => {
 });
 
 document.getElementById("open-add-product").addEventListener("click", () => {
+  const select = document.getElementById("np-cat-select");
+  const existingCats = [...new Set(PRODUCTS.map(p => p.cat).filter(Boolean))];
+  select.innerHTML = '<option value="">— tanlang —</option>' +
+    existingCats.map(c => `<option value="${c}">${c}</option>`).join("") +
+    '<option value="__new__">+ Yangi kategoriya</option>';
+  document.getElementById("np-cat-new").style.display = "none";
+  document.getElementById("np-cat-new").value = "";
   document.getElementById("modal-overlay").classList.remove("hidden");
+});
+document.getElementById("np-cat-select").addEventListener("change", (e) => {
+  document.getElementById("np-cat-new").style.display = e.target.value === "__new__" ? "block" : "none";
 });
 document.getElementById("cancel-new-product").addEventListener("click", () => {
   document.getElementById("modal-overlay").classList.add("hidden");
@@ -302,14 +360,22 @@ document.getElementById("cancel-new-product").addEventListener("click", () => {
 document.getElementById("save-new-product").addEventListener("click", () => {
   const name = document.getElementById("np-name").value.trim();
   const price = parseInt(document.getElementById("np-price").value, 10);
-  const cat = document.getElementById("np-cat").value.trim();
   const optomPrice = parseInt(document.getElementById("np-optom-price").value, 10);
+  const optomMin = parseInt(document.getElementById("np-optom-min").value, 10);
+  const stockRaw = document.getElementById("np-stock").value.trim();
+  const catSelect = document.getElementById("np-cat-select").value;
+  const cat = catSelect === "__new__" ? document.getElementById("np-cat-new").value.trim() : catSelect;
 
   if (!name || !price) { tg.showAlert("Nomi va narxi to'ldirilishi shart"); return; }
+  if (!cat) { tg.showAlert("Kategoriyani tanlang yoki kiriting"); return; }
 
   const payload = { type: "add_product", name, price, cat };
-  if (!isNaN(optomPrice) && optomPrice > 0) {
-    payload.tiers = [{ min_qty: 1, price: price }, { min_qty: 100, price: optomPrice }];
+  if (!isNaN(optomPrice) && optomPrice > 0 && !isNaN(optomMin) && optomMin > 0) {
+    payload.tiers = [{ min_qty: 1, price: price }, { min_qty: optomMin, price: optomPrice }];
+  }
+  if (stockRaw !== "") {
+    const stock = parseInt(stockRaw, 10);
+    if (!isNaN(stock) && stock >= 0) payload.stock = stock;
   }
   tg.sendData(JSON.stringify(payload));
 });

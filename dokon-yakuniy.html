@@ -496,19 +496,22 @@ function renderProducts() {
   const list = activeCat === "Hammasi" ? PRODUCTS : PRODUCTS.filter(p => p.cat === activeCat);
   list.forEach(p => {
     const qty = cart[p.id] || 0;
+    const outOfStock = p.stock === 0;
     const card = document.createElement("div");
     card.className = "product";
     card.setAttribute("data-id", p.id);
     card.innerHTML = `
       <div class="img-wrap">
-        ${p.optom ? '<span class="optom-badge">Optom bor</span>' : ''}
+        ${outOfStock ? '<span class="optom-badge" style="background:#8a8a8a;">Tugadi</span>' : (p.optom ? '<span class="optom-badge">Optom bor</span>' : '')}
         ${productMedia(p)}
       </div>
       <div class="info">
         <p class="name">${p.name}</p>
         <div class="price-row">
           <span class="price">${fmt(getUnitPrice(p, qty || 1))}</span>
-          ${qty === 0
+          ${outOfStock
+            ? `<span style="font-size:12px;color:#999;font-weight:700;">Tugagan</span>`
+            : qty === 0
             ? `<button class="add-btn" data-add="${p.id}">+</button>`
             : `<div class="qty-row">
                  <button data-minus="${p.id}">−</button>
@@ -845,10 +848,17 @@ document.getElementById("detail-qty-value").addEventListener("change", (e) => {
 function updateDetailCta() {
   const btn = document.getElementById("detail-cta-btn");
   const needsVariant = detailProduct.variants && detailProduct.variants.length && !detailVariant;
-  btn.textContent = needsVariant ? "Rangni tanlang" : "🛒 Savatga qo'shish";
+  if (detailProduct.stock === 0) {
+    btn.textContent = "Tugagan";
+    btn.disabled = true;
+  } else {
+    btn.disabled = false;
+    btn.textContent = needsVariant ? "Rangni tanlang" : "🛒 Savatga qo'shish";
+  }
 }
 
 document.getElementById("detail-cta-btn").addEventListener("click", () => {
+  if (detailProduct.stock === 0) return;
   if (detailProduct.variants && detailProduct.variants.length && !detailVariant) {
     tg.showAlert("Iltimos, avval rangni tanlang");
     return;

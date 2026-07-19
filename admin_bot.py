@@ -150,6 +150,8 @@ def web_app_data_handler(message):
     ok = False
     if action == "edit_price":
         ok = handle_edit_price(data)
+    elif action == "edit_stock":
+        ok = handle_edit_stock(data)
     elif action == "toggle_active":
         ok = handle_toggle_active(data)
     elif action == "delete_product":
@@ -210,6 +212,19 @@ def handle_edit_price(data):
     return gh_write("products.json", products, f"Narx yangilandi: {pid}")
 
 
+def handle_edit_stock(data):
+    products = gh_read("products.json", [])
+    pid = str(data.get("product_id"))
+    stock = data.get("stock")
+    for p in products:
+        if str(p["id"]) == pid:
+            if stock is None:
+                p.pop("stock", None)
+            else:
+                p["stock"] = stock
+    return gh_write("products.json", products, f"Qoldiq yangilandi: {pid}")
+
+
 def handle_toggle_active(data):
     products = gh_read("products.json", [])
     pid = str(data.get("product_id"))
@@ -239,6 +254,8 @@ def handle_add_product(data):
     }
     if data.get("tiers"):
         new_product["tiers"] = data["tiers"]
+    if data.get("stock") is not None:
+        new_product["stock"] = data["stock"]
     products.append(new_product)
     if gh_write("products.json", products, f"Yangi mahsulot: {new_product['name']}"):
         return next_id
