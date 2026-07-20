@@ -67,7 +67,7 @@
     ]
   },
   "8881459774": {
-    "cashback_balance": 643110,
+    "cashback_balance": 643460,
     "referred_by": null,
     "referral_count": 0,
     "orders": [
@@ -112,6 +112,25 @@
         ],
         "total": 231000,
         "cashback_earned": 2310
+      },
+      {
+        "date": "20.07.2026",
+        "items": [
+          {
+            "name": "Sim",
+            "qty": 1
+          },
+          {
+            "name": "Sim",
+            "qty": 100
+          },
+          {
+            "name": "Temir",
+            "qty": 1
+          }
+        ],
+        "total": 35000,
+        "cashback_earned": 350
       }
     ]
   }
