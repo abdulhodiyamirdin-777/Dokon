@@ -177,6 +177,9 @@
   .back-link { color: var(--accent); font-size: 14px; font-weight: 700; display: inline-block; margin-bottom: 4px; }
 
   #profile-view { padding: 16px 16px 8px; }
+  #fav-view { padding: 16px 16px 8px; }
+  #fav-view h1 { font-size: 22px; margin: 4px 0 16px; }
+  .review-item .r-product { font-size: 12.5px; font-weight: 700; color: var(--hint); margin-bottom: 4px; }
 
   .cashback-card {
     border-radius: 20px; padding: 20px; margin-bottom: 14px;
@@ -362,6 +365,11 @@
   </div>
 </div>
 
+<div id="fav-view" class="hidden">
+  <h1>Fikrlar</h1>
+  <div id="all-reviews-list"></div>
+</div>
+
 <div id="detail-view" class="hidden">
   <div class="detail-top">
     <button class="detail-close" id="detail-close-btn">✕</button>
@@ -431,7 +439,7 @@ tg.expand();
 const SHOP_NAME = "Mening Do'konim";
 const SHOP_SUB = "Optom va chakana · Andijon";
 const SHOP_LOGO_URL = "";
-const SHOP_MAP_URL = "https://maps.google.com/?q=40.8300426,72.3539144";
+const SHOP_MAP_URL = "https://maps.google.com/?q=40.8255954,72.3531980";
 
 const GITHUB_BASE = "https://raw.githubusercontent.com/abdulhodiyamirdin-777/Dokon/main/";
 const BOT_USERNAME = "Abdulhodiy777bot";
@@ -559,21 +567,18 @@ function updateBadges() {
   });
 }
 
-const tabs = { shop: "shop-view", cart: "cart-view", fav: null, profile: "profile-view" };
+const tabs = { shop: "shop-view", cart: "cart-view", fav: "fav-view", profile: "profile-view" };
 document.querySelectorAll(".nav-item").forEach(item => {
   item.addEventListener("click", () => {
     const tab = item.getAttribute("data-tab");
-    if (tab === "fav") {
-      tg.showAlert("Bu bo'lim tez orada qo'shiladi 🙂");
-      return;
-    }
     document.querySelectorAll(".nav-item").forEach(i => i.classList.remove("active"));
     item.classList.add("active");
-    ["shop-view","cart-view","form-view","profile-view"].forEach(id => document.getElementById(id).classList.add("hidden"));
+    ["shop-view","cart-view","form-view","profile-view","fav-view"].forEach(id => document.getElementById(id).classList.add("hidden"));
     document.getElementById(tabs[tab]).classList.remove("hidden");
     document.getElementById("checkout-bar").classList.toggle("hidden", tab !== "cart" || cartCount() === 0);
     if (tab === "cart") renderCart();
     if (tab === "profile") renderProfile();
+    if (tab === "fav") renderAllReviews();
   });
 });
 
@@ -766,7 +771,7 @@ function openDetail(id) {
   renderDetailReviews();
   updateDetailCta();
 
-  ["shop-view","cart-view","form-view","profile-view"].forEach(vid => document.getElementById(vid).classList.add("hidden"));
+  ["shop-view","cart-view","form-view","profile-view","fav-view"].forEach(vid => document.getElementById(vid).classList.add("hidden"));
   document.getElementById("checkout-bar").classList.add("hidden");
   document.getElementById("detail-view").classList.remove("hidden");
 }
@@ -902,6 +907,28 @@ async function loadReviews() {
   } catch (e) {
     REVIEWS = {};
   }
+}
+
+function renderAllReviews() {
+  const list = document.getElementById("all-reviews-list");
+  const rows = [];
+  Object.keys(REVIEWS).forEach(productId => {
+    const p = PRODUCTS.find(p => String(p.id) === String(productId));
+    (REVIEWS[productId] || []).forEach(r => {
+      rows.push({ productName: p ? p.name : "Mahsulot", ...r });
+    });
+  });
+  if (rows.length === 0) {
+    list.innerHTML = '<div class="review-empty">Hali sharh yo\'q — birinchi bo\'ling!</div>';
+    return;
+  }
+  list.innerHTML = rows.reverse().map(r => `
+    <div class="review-item">
+      <div class="r-product">${r.productName}</div>
+      <div class="r-stars">${"★".repeat(r.rating)}${"☆".repeat(5 - r.rating)}</div>
+      ${r.comment ? `<div class="r-text">${r.comment}</div>` : ""}
+    </div>
+  `).join("");
 }
 
 function renderDetailReviews() {
