@@ -14,5 +14,46 @@
     "status": "Yetkazildi",
     "date": "2026-07-18 12:33",
     "user_id": "8881459774"
+  },
+  "10002": {
+    "customer": "Abdulhodiy",
+    "phone": "900800028",
+    "address": "Q",
+    "items": [
+      {
+        "name": "Video karta",
+        "qty": 1,
+        "price": 100000
+      },
+      {
+        "name": "Shayton",
+        "qty": 1,
+        "price": 80000
+      },
+      {
+        "name": "Kulichator",
+        "qty": 1,
+        "price": 25000
+      },
+      {
+        "name": "Avto zapchast pachinnik",
+        "qty": 1,
+        "price": 1000
+      },
+      {
+        "name": "Sim",
+        "qty": 1,
+        "price": 15000
+      },
+      {
+        "name": "Temir",
+        "qty": 1,
+        "price": 10000
+      }
+    ],
+    "total": 231000,
+    "status": "Yangi",
+    "date": "2026-07-20 11:40",
+    "user_id": "8881459774"
   }
 }
