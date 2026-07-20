@@ -662,7 +662,7 @@ document.getElementById("checkout-btn").addEventListener("click", () => {
     type: "order",
     items: Object.entries(cart).map(([id, qty]) => {
       const p = PRODUCTS.find(p => p.id == id);
-      return { name: p.name, qty, price: getUnitPrice(p, qty) };
+      return { id: p.id, name: p.name, qty, price: getUnitPrice(p, qty) };
     }),
     total: cartTotal(),
     name, phone, address, note,

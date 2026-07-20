@@ -9,6 +9,7 @@ from github_helper import get_stats, save_stats
 
 # ---- Sozlamalar ----
 BOT_TOKEN = os.environ.get("BOT_TOKEN", "")
+ADMIN_BOT_TOKEN = os.environ.get("ADMIN_BOT_TOKEN", "")
 WEBAPP_URL = "https://abdulhodiyamirdin-777.github.io/Dokon/dokon-yakuniy.html"
 ADMIN_CHAT_ID = 8881459774
 
@@ -83,6 +84,58 @@ def register_referral(new_user_id, referrer_id):
 
 def _orders_api_url():
     return f"https://api.github.com/repos/{GITHUB_REPO}/contents/orders.json"
+
+
+def _products_api_url():
+    return f"https://api.github.com/repos/{GITHUB_REPO}/contents/products.json"
+
+
+def get_products():
+    try:
+        r = requests.get(_products_api_url(), headers={"Authorization": f"token {GITHUB_TOKEN}"})
+        r.raise_for_status()
+        content = base64.b64decode(r.json()["content"]).decode("utf-8")
+        return json.loads(content)
+    except Exception as e:
+        print("products.json o'qilmadi:", e)
+        return []
+
+
+def send_via_admin_bot(text):
+    """Buyurtma matnini savdo bot o'rniga admin bot orqali yuboradi."""
+    if not ADMIN_BOT_TOKEN:
+        bot.send_message(ADMIN_CHAT_ID, text, parse_mode="HTML")
+        return
+    try:
+        resp = requests.post(
+            f"https://api.telegram.org/bot{ADMIN_BOT_TOKEN}/sendMessage",
+            json={"chat_id": ADMIN_CHAT_ID, "text": text, "parse_mode": "HTML"}
+        )
+        if not resp.ok:
+            bot.send_message(ADMIN_CHAT_ID, text, parse_mode="HTML")
+    except Exception as e:
+        print("Admin botga xabar yuborilmadi:", e)
+        bot.send_message(ADMIN_CHAT_ID, text, parse_mode="HTML")
+
+
+def send_order_photos_via_admin_bot(items):
+    """Buyurtmadagi har bir mahsulot uchun rasmni admin botga yuboradi — yig'ishda oson topish uchun."""
+    if not ADMIN_BOT_TOKEN:
+        return
+    products = get_products()
+    for item in items:
+        p = next((p for p in products if str(p.get("id")) == str(item.get("id"))), None)
+        if not p or not p.get("image"):
+            continue
+        image_url = f"https://raw.githubusercontent.com/{GITHUB_REPO}/main/{p['image']}"
+        caption = f"📦 {item.get('name', '')} — {item.get('qty', 1)} dona"
+        try:
+            requests.post(
+                f"https://api.telegram.org/bot{ADMIN_BOT_TOKEN}/sendPhoto",
+                json={"chat_id": ADMIN_CHAT_ID, "photo": image_url, "caption": caption}
+            )
+        except Exception as e:
+            print(f"Rasm yuborilmadi ({item.get('name')}):", e)
 
 
 def get_orders():
@@ -270,7 +323,8 @@ def web_app_data_handler(message):
     except Exception as e:
         print("Buyurtma saqlanmadi:", e)
 
-    bot.send_message(ADMIN_CHAT_ID, order_text, parse_mode="HTML")
+    send_via_admin_bot(order_text)
+    send_order_photos_via_admin_bot(order.get("items", []))
     bot.send_message(
         message.chat.id,
         "✅ Buyurtmangiz qabul qilindi!\nTez orada operatorimiz siz bilan bog'lanadi."
