@@ -67,7 +67,7 @@
     ]
   },
   "8881459774": {
-    "cashback_balance": 640800,
+    "cashback_balance": 643460,
     "referred_by": null,
     "referral_count": 0,
     "orders": [
@@ -81,6 +81,74 @@
         ],
         "total": 64080000,
         "cashback_earned": 640800
+      },
+      {
+        "date": "20.07.2026",
+        "items": [
+          {
+            "name": "Video karta",
+            "qty": 1
+          },
+          {
+            "name": "Shayton",
+            "qty": 1
+          },
+          {
+            "name": "Kulichator",
+            "qty": 1
+          },
+          {
+            "name": "Avto zapchast pachinnik",
+            "qty": 1
+          },
+          {
+            "name": "Sim",
+            "qty": 1
+          },
+          {
+            "name": "Temir",
+            "qty": 1
+          }
+        ],
+        "total": 231000,
+        "cashback_earned": 2310
+      },
+      {
+        "date": "20.07.2026",
+        "items": [
+          {
+            "name": "Sim",
+            "qty": 1
+          },
+          {
+            "name": "Sim",
+            "qty": 100
+          },
+          {
+            "name": "Temir",
+            "qty": 1
+          }
+        ],
+        "total": 35000,
+        "cashback_earned": 350
+      }
+    ]
+  },
+  "112265177": {
+    "cashback_balance": 1500,
+    "referred_by": null,
+    "referral_count": 0,
+    "orders": [
+      {
+        "date": "21.07.2026",
+        "items": [
+          {
+            "name": "Sim",
+            "qty": 10
+          }
+        ],
+        "total": 150000,
+        "cashback_earned": 1500
       }
     ]
   }

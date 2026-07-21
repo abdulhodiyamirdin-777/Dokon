@@ -14,5 +14,88 @@
     "status": "Yetkazildi",
     "date": "2026-07-18 12:33",
     "user_id": "8881459774"
+  },
+  "10002": {
+    "customer": "Abdulhodiy",
+    "phone": "900800028",
+    "address": "Q",
+    "items": [
+      {
+        "name": "Video karta",
+        "qty": 1,
+        "price": 100000
+      },
+      {
+        "name": "Shayton",
+        "qty": 1,
+        "price": 80000
+      },
+      {
+        "name": "Kulichator",
+        "qty": 1,
+        "price": 25000
+      },
+      {
+        "name": "Avto zapchast pachinnik",
+        "qty": 1,
+        "price": 1000
+      },
+      {
+        "name": "Sim",
+        "qty": 1,
+        "price": 15000
+      },
+      {
+        "name": "Temir",
+        "qty": 1,
+        "price": 10000
+      }
+    ],
+    "total": 231000,
+    "status": "Yangi",
+    "date": "2026-07-20 11:40",
+    "user_id": "8881459774"
+  },
+  "10003": {
+    "customer": "Te",
+    "phone": "2",
+    "address": "Y",
+    "items": [
+      {
+        "name": "Sim",
+        "qty": 1,
+        "price": 15000
+      },
+      {
+        "name": "Sim",
+        "qty": 100,
+        "price": 100
+      },
+      {
+        "name": "Temir",
+        "qty": 1,
+        "price": 10000
+      }
+    ],
+    "total": 35000,
+    "status": "Yangi",
+    "date": "2026-07-20 15:16",
+    "user_id": "8881459774"
+  },
+  "10004": {
+    "customer": "A",
+    "phone": "48184",
+    "address": "Gegeb",
+    "items": [
+      {
+        "name": "Sim",
+        "qty": 10,
+        "price": 15000
+      }
+    ],
+    "total": 150000,
+    "status": "Yangi",
+    "date": "2026-07-21 13:11",
+    "user_id": "112265177"
   }
 }
