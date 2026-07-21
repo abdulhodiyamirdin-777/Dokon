@@ -24,7 +24,8 @@
     "name": "Shayton",
     "price": 80000,
     "image": "product_2_1784398349.jpg",
-    "cat": "Elektronika"
+    "cat": "Elektronika",
+    "active": false
   },
   {
     "id": 3,
