@@ -81,5 +81,21 @@
     "status": "Yangi",
     "date": "2026-07-20 15:16",
     "user_id": "8881459774"
+  },
+  "10004": {
+    "customer": "A",
+    "phone": "48184",
+    "address": "Gegeb",
+    "items": [
+      {
+        "name": "Sim",
+        "qty": 10,
+        "price": 15000
+      }
+    ],
+    "total": 150000,
+    "status": "Yangi",
+    "date": "2026-07-21 13:11",
+    "user_id": "112265177"
   }
 }
