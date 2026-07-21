@@ -131,5 +131,64 @@
     "status": "Yangi",
     "date": "2026-07-21 14:56",
     "user_id": "8881459774"
+  },
+  "10007": {
+    "customer": "1",
+    "phone": "1",
+    "address": "1",
+    "items": [
+      {
+        "id": 1,
+        "name": "Video karta",
+        "qty": 5,
+        "price": 50000
+      },
+      {
+        "id": 2,
+        "name": "Shayton",
+        "qty": 4,
+        "price": 80000
+      },
+      {
+        "id": 3,
+        "name": "Kulichator",
+        "qty": 3,
+        "price": 25000
+      },
+      {
+        "id": 4,
+        "name": "Avto zapchast pachinnik",
+        "qty": 2,
+        "price": 1000
+      },
+      {
+        "id": 5,
+        "name": "Sim",
+        "qty": 2,
+        "price": 15000
+      },
+      {
+        "id": 6,
+        "name": "Sim",
+        "qty": 2,
+        "price": 15000
+      },
+      {
+        "id": 7,
+        "name": "Temir",
+        "qty": 1,
+        "price": 10000
+      },
+      {
+        "id": 8,
+        "name": "Usb tps",
+        "qty": 1,
+        "price": 5000
+      }
+    ],
+    "total": 722000,
+    "status": "Yangi",
+    "date": "2026-07-21 15:21",
+    "user_id": "8881459774"
   }
 }
