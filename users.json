@@ -133,5 +133,23 @@
         "cashback_earned": 350
       }
     ]
+  },
+  "112265177": {
+    "cashback_balance": 1500,
+    "referred_by": null,
+    "referral_count": 0,
+    "orders": [
+      {
+        "date": "21.07.2026",
+        "items": [
+          {
+            "name": "Sim",
+            "qty": 10
+          }
+        ],
+        "total": 150000,
+        "cashback_earned": 1500
+      }
+    ]
   }
 }
