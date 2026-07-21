@@ -114,5 +114,22 @@
     "status": "Bekor",
     "date": "2026-07-21 14:48",
     "user_id": "8881459774"
+  },
+  "10006": {
+    "customer": "Q",
+    "phone": "1",
+    "address": "1",
+    "items": [
+      {
+        "id": 2,
+        "name": "Shayton",
+        "qty": 4,
+        "price": 80000
+      }
+    ],
+    "total": 320000,
+    "status": "Yangi",
+    "date": "2026-07-21 14:56",
+    "user_id": "8881459774"
   }
 }
