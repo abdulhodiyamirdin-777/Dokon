@@ -97,5 +97,22 @@
     "status": "Yangi",
     "date": "2026-07-21 13:11",
     "user_id": "112265177"
+  },
+  "10005": {
+    "customer": "1",
+    "phone": "1",
+    "address": "1",
+    "items": [
+      {
+        "id": 1,
+        "name": "Video karta",
+        "qty": 10,
+        "price": 92000
+      }
+    ],
+    "total": 920000,
+    "status": "Yangi",
+    "date": "2026-07-21 14:48",
+    "user_id": "8881459774"
   }
 }
