@@ -102,5 +102,24 @@
       }
     ],
     "stock": 10000
+  },
+  {
+    "id": 8,
+    "name": "Usb tps",
+    "price": 5000,
+    "cat": "Kabil",
+    "image": "",
+    "active": true,
+    "tiers": [
+      {
+        "min_qty": 1,
+        "price": 5000
+      },
+      {
+        "min_qty": 100,
+        "price": 4000
+      }
+    ],
+    "stock": 10000
   }
 ]
