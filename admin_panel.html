@@ -55,6 +55,7 @@
   .card .actions { display: flex; gap: 6px; align-items: center; flex-shrink: 0; }
   .card .actions button { border: none; background: var(--bg); width: 32px; height: 32px; border-radius: 9px; font-size: 15px; }
   .dot { width: 14px; height: 14px; border-radius: 50%; border: none; padding: 0; }
+  .card .info .pmeta.discount-status { color: #e0294b; font-weight: 700; }
   .dot.on { background: var(--ok); }
   .dot.off { background: #ccc; }
 
@@ -68,6 +69,10 @@
   .badge.Bekor { background: #eee; color: var(--hint); }
   .order-card .o-total { font-weight: 800; font-size: 15px; margin-bottom: 4px; }
   .order-card .o-meta { font-size: 12.5px; color: var(--hint); margin-bottom: 10px; }
+  .o-items { display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px; }
+  .o-item { display: flex; align-items: center; gap: 8px; font-size: 12.5px; }
+  .o-item img { width: 34px; height: 34px; border-radius: 8px; object-fit: cover; flex-shrink: 0; }
+  .o-item-thumb-fallback { width: 34px; height: 34px; border-radius: 8px; background: var(--bg); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
   .status-row { display: flex; gap: 6px; flex-wrap: wrap; }
   .status-row button {
     border: 1.5px solid #eee; background: #fff; border-radius: 10px; padding: 7px 10px; font-size: 12px; font-weight: 700; color: var(--text);
@@ -240,6 +245,19 @@
   </div>
 </div>
 
+<div id="discount-modal-overlay" class="hidden">
+  <div id="modal-sheet">
+    <h2>Chegirma</h2>
+    <label>Chegirma narxi (so'm)</label>
+    <input id="dc-price" inputmode="numeric" placeholder="Masalan: 65000">
+    <label>Tugash sanasi va vaqti</label>
+    <input id="dc-until" type="datetime-local">
+    <button class="save-btn" id="save-discount">Saqlash</button>
+    <button class="cancel-btn" id="clear-discount">Chegirmani bekor qilish</button>
+    <button class="cancel-btn" id="cancel-discount">Yopish</button>
+  </div>
+</div>
+
 <script>
 const tg = window.Telegram.WebApp;
 tg.ready(); tg.expand();
@@ -296,8 +314,10 @@ function renderProducts() {
         <p class="pname">${p.name}${p.stock === 0 ? '<span class="stock-out">Tugadi</span>' : ''}</p>
         <p class="pmeta">${p.cat || ""} · <input class="price-edit" type="number" inputmode="numeric" value="${p.price}" data-price-id="${p.id}"> so'm</p>
         <p class="pmeta">Qoldiq: <input class="price-edit stock-edit" type="number" inputmode="numeric" value="${p.stock ?? ''}" placeholder="cheksiz" data-stock-id="${p.id}"></p>
+        ${p.sale_price != null ? `<p class="pmeta discount-status">🏷️ ${fmt(p.sale_price)} · ${new Date(p.sale_until).toLocaleDateString("uz-UZ")} gacha</p>` : ''}
       </div>
       <div class="actions">
+        <button data-discount-id="${p.id}" title="Chegirma">🏷️</button>
         <button data-img-id="${p.id}" title="Rasmni almashtirish">🖼️</button>
         <button class="dot ${p.active === false ? 'off' : 'on'}" data-toggle-id="${p.id}" title="Faol/nofaol"></button>
         <button data-del-id="${p.id}">🗑️</button>
@@ -322,10 +342,20 @@ document.getElementById("products-list").addEventListener("change", (e) => {
   }
 });
 
+let editingDiscountId = null;
+
 document.getElementById("products-list").addEventListener("click", (e) => {
   const toggleId = e.target.getAttribute("data-toggle-id");
   const delId = e.target.getAttribute("data-del-id");
   const imgId = e.target.getAttribute("data-img-id");
+  const discountId = e.target.getAttribute("data-discount-id");
+  if (discountId) {
+    editingDiscountId = discountId;
+    const p = PRODUCTS.find(p => String(p.id) === discountId);
+    document.getElementById("dc-price").value = p.sale_price != null ? p.sale_price : "";
+    document.getElementById("dc-until").value = p.sale_until ? p.sale_until.slice(0, 16) : "";
+    document.getElementById("discount-modal-overlay").classList.remove("hidden");
+  }
   if (imgId) {
     tg.sendData(JSON.stringify({ type: "set_pending_image", product_id: imgId }));
   }
@@ -339,6 +369,19 @@ document.getElementById("products-list").addEventListener("click", (e) => {
       if (ok) tg.sendData(JSON.stringify({ type: "delete_product", product_id: delId }));
     });
   }
+});
+
+document.getElementById("cancel-discount").addEventListener("click", () => {
+  document.getElementById("discount-modal-overlay").classList.add("hidden");
+});
+document.getElementById("save-discount").addEventListener("click", () => {
+  const price = parseInt(document.getElementById("dc-price").value, 10);
+  const until = document.getElementById("dc-until").value;
+  if (isNaN(price) || price <= 0 || !until) { tg.showAlert("Narx va tugash vaqtini to'ldiring"); return; }
+  tg.sendData(JSON.stringify({ type: "set_discount", product_id: editingDiscountId, sale_price: price, sale_until: until }));
+});
+document.getElementById("clear-discount").addEventListener("click", () => {
+  tg.sendData(JSON.stringify({ type: "set_discount", product_id: editingDiscountId, sale_price: null, sale_until: null }));
 });
 
 document.getElementById("open-add-product").addEventListener("click", () => {
@@ -398,6 +441,13 @@ function renderOrders() {
       </div>
       <div class="o-total">${fmt(o.total)}</div>
       <div class="o-meta">${o.customer || ""} · ${o.phone || ""} · ${o.date || ""}</div>
+      <div class="o-items">
+        ${(o.items || []).map(item => {
+          const p = PRODUCTS.find(p => String(p.id) === String(item.id));
+          const thumb = p && p.image ? `<img src="${GITHUB_BASE + p.image}">` : `<div class="o-item-thumb-fallback">📦</div>`;
+          return `<div class="o-item">${thumb}<span>${item.name} × ${item.qty}</span></div>`;
+        }).join("")}
+      </div>
       <div class="status-row">
         ${statuses.map(s => `<button class="${o.status === s ? 'current' : ''}" data-order-id="${id}" data-status="${s}">${s}</button>`).join("")}
       </div>

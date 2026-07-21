@@ -107,6 +107,7 @@
   }
   .product .info { padding: 10px 10px 12px; }
   .product .name { font-size: 13.5px; font-weight: 600; line-height: 1.3; margin: 0 0 6px; min-height: 34px; }
+  .product .old-price { font-size: 11.5px; color: var(--hint); text-decoration: line-through; margin: -3px 0 2px; }
   .product .price-row { display: flex; align-items: center; justify-content: space-between; }
   .product .price { font-size: 15px; font-weight: 800; }
   .product .add-btn {
@@ -243,6 +244,7 @@
   .detail-cat { font-size: 11px; font-weight: 800; letter-spacing: 0.6px; color: var(--hint); text-transform: uppercase; margin: 0 0 6px; }
   .detail-name { font-size: 24px; font-weight: 800; margin: 0 0 10px; letter-spacing: -0.4px; }
   .detail-price { font-size: 22px; font-weight: 800; margin-bottom: 14px; }
+  .detail-old-price { font-size: 14px; color: var(--hint); text-decoration: line-through; margin: -8px 0 4px; }
 
   .tier-box { background: var(--bg); border-radius: 14px; padding: 12px 14px; font-size: 13.5px; margin-bottom: 18px; }
   .tier-box b { font-weight: 800; }
@@ -378,6 +380,7 @@
   <div class="detail-card">
     <p class="detail-cat" id="detail-cat"></p>
     <h1 class="detail-name" id="detail-name"></h1>
+    <div class="detail-old-price hidden" id="detail-old-price"></div>
     <div class="detail-price" id="detail-price"></div>
 
     <div class="tier-box hidden" id="tier-box"></div>
@@ -465,10 +468,14 @@ let activeCat = "Hammasi";
 
 function fmt(n) { return n.toLocaleString("ru-RU") + " so'm"; }
 function cartCount() { return Object.values(cart).reduce((a,b)=>a+b,0); }
+function isOnSale(p) {
+  return p.sale_price != null && p.sale_until && new Date(p.sale_until) > new Date();
+}
 function getUnitPrice(p, qty) {
-  if (!p.tiers || !p.tiers.length) return p.price;
-  let price = p.price;
-  p.tiers.forEach(t => { if (qty >= t.min_qty) price = t.price; });
+  const base = isOnSale(p) ? p.sale_price : p.price;
+  if (!p.tiers || !p.tiers.length) return base;
+  let price = base;
+  p.tiers.forEach(t => { if (qty >= t.min_qty && t.min_qty > 1) price = t.price; });
   return price;
 }
 function nextTier(p, qty) {
@@ -506,16 +513,19 @@ function renderProducts() {
   list.forEach(p => {
     const qty = cart[p.id] || 0;
     const outOfStock = p.stock === 0;
+    const onSale = isOnSale(p);
+    const discountPct = onSale ? Math.round((1 - p.sale_price / p.price) * 100) : 0;
     const card = document.createElement("div");
     card.className = "product";
     card.setAttribute("data-id", p.id);
     card.innerHTML = `
       <div class="img-wrap">
-        ${outOfStock ? '<span class="optom-badge" style="background:#8a8a8a;">Tugadi</span>' : (p.optom ? '<span class="optom-badge">Optom bor</span>' : '')}
+        ${outOfStock ? '<span class="optom-badge" style="background:#8a8a8a;">Tugadi</span>' : onSale ? `<span class="optom-badge" style="background:#e0294b;">-${discountPct}%</span>` : (p.optom ? '<span class="optom-badge">Optom bor</span>' : '')}
         ${productMedia(p)}
       </div>
       <div class="info">
         <p class="name">${p.name}</p>
+        ${onSale ? `<div class="old-price">${fmt(p.price)}</div>` : ""}
         <div class="price-row">
           <span class="price">${fmt(getUnitPrice(p, qty || 1))}</span>
           ${outOfStock
@@ -784,6 +794,13 @@ function renderDetailGallery() {
 
 function renderDetailPrice() {
   document.getElementById("detail-price").textContent = fmt(getUnitPrice(detailProduct, detailQty));
+  const oldPriceEl = document.getElementById("detail-old-price");
+  if (isOnSale(detailProduct) && detailQty < ((detailProduct.tiers || []).find(t => t.min_qty > 1)?.min_qty || Infinity)) {
+    oldPriceEl.textContent = fmt(detailProduct.price);
+    oldPriceEl.classList.remove("hidden");
+  } else {
+    oldPriceEl.classList.add("hidden");
+  }
 }
 
 function renderDetailTierBox() {

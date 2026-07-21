@@ -152,6 +152,8 @@ def web_app_data_handler(message):
         ok = handle_edit_price(data)
     elif action == "edit_stock":
         ok = handle_edit_stock(data)
+    elif action == "set_discount":
+        ok = handle_set_discount(data)
     elif action == "toggle_active":
         ok = handle_toggle_active(data)
     elif action == "delete_product":
@@ -223,6 +225,22 @@ def handle_edit_stock(data):
             else:
                 p["stock"] = stock
     return gh_write("products.json", products, f"Qoldiq yangilandi: {pid}")
+
+
+def handle_set_discount(data):
+    products = gh_read("products.json", [])
+    pid = str(data.get("product_id"))
+    sale_price = data.get("sale_price")
+    sale_until = data.get("sale_until")
+    for p in products:
+        if str(p["id"]) == pid:
+            if sale_price is None or sale_until is None:
+                p.pop("sale_price", None)
+                p.pop("sale_until", None)
+            else:
+                p["sale_price"] = sale_price
+                p["sale_until"] = sale_until
+    return gh_write("products.json", products, f"Chegirma yangilandi: {pid}")
 
 
 def handle_toggle_active(data):
