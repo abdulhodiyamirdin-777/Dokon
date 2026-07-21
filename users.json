@@ -67,7 +67,7 @@
     ]
   },
   "8881459774": {
-    "cashback_balance": 643460,
+    "cashback_balance": 652660,
     "referred_by": null,
     "referral_count": 0,
     "orders": [
@@ -131,6 +131,17 @@
         ],
         "total": 35000,
         "cashback_earned": 350
+      },
+      {
+        "date": "21.07.2026",
+        "items": [
+          {
+            "name": "Video karta",
+            "qty": 10
+          }
+        ],
+        "total": 920000,
+        "cashback_earned": 9200
       }
     ]
   },
