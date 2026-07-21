@@ -67,7 +67,7 @@
     ]
   },
   "8881459774": {
-    "cashback_balance": 652660,
+    "cashback_balance": 655860,
     "referred_by": null,
     "referral_count": 0,
     "orders": [
@@ -142,6 +142,17 @@
         ],
         "total": 920000,
         "cashback_earned": 9200
+      },
+      {
+        "date": "21.07.2026",
+        "items": [
+          {
+            "name": "Shayton",
+            "qty": 4
+          }
+        ],
+        "total": 320000,
+        "cashback_earned": 3200
       }
     ]
   },
